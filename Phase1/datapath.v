@@ -3,18 +3,17 @@ module datapath(
 	input  wire [31:0] A,
 	input  wire [31:0] RegisterImmediate,
 	
-	input  wire RZout, RAout, RBout,
-	input  wire RAin, RBin, RZin
 	
 	input  wire [15:0] Rin,   // R0in ... R15in
-	input  wire [15:0] Rout   // R0out ... R15out
+	input  wire [15:0] Rout , // R0out ... R15out
 	
 	input  wire PCin, PCout,
 	input  wire IRin, IRout,
 	input  wire Yin,  Yout,
 	input  wire MDRin, MDRout,
 	input  wire HIin, HIout,
-	input  wire LOin, LOout
+	input  wire LOin, LOout,
+	input wire Zhighin, Zlowin, Zhighout, Zlowout
 
 );
 
@@ -47,16 +46,14 @@ wire [31:0] R15_data_out;
 wire [31:0] PC_data_out;
 wire [31:0] IR_data_out;
 wire [31:0] Y_data_out;
-
-
 wire [31:0] MAR_data_out;
 wire [31:0] HI_data_out;
 wire [31:0] LO_data_out;
 
+wire [31:0] Zlow_data_out;
+wire [31:0] Zhigh_data_out;
+
 // Devices
-register RA(clear, clock, RAin, RegisterImmediate, BusMuxInRA);
-register RB(clear, clock, RBin, BusMuxOut, BusMuxInRB);
-register RZ(clear, clock, RZin, zregin, BusMuxInRZ);
 
 
 register R0(clear, clock, Rin[0],  BusMuxOut, R0_data_out);
@@ -84,6 +81,9 @@ register MDR(clear, clock, MDRin, BusMuxOut, MDR_data_out);
 register HI(clear, clock, HIin, BusMuxOut, HI_data_out);
 register LO(clear, clock, LOin, BusMuxOut, LO_data_out);
 
+register Zlow(clear, clock, Zlowin, zregin[31:0], Zlow_data_out);
+register Zhigh(clear, clock, Zhighin, zregin[63:32], Zhigh_data_out);
+
 // Adder and Z register
 adder add(A, BusMuxOut, zregin);
 
@@ -91,15 +91,75 @@ adder add(A, BusMuxOut, zregin);
 
 // Bus
 Bus bus(
-	R0_data_out, R1_data_out, R2_data_out, R3_data_out,
-	R4_data_out, R5_data_out, R6_data_out, R7_data_out,
-	R8_data_out, R9_data_out, R10_data_out, R11_data_out,
-	R12_data_out, R13_data_out, R14_data_out, R15_data_out,
-	MDR_data_out, PC_data_out, IR_data_out, Y_data_out, 
-	HI_data_out, LO_data_out
-	
-	BusMuxInRA, BusMuxInRB, BusMuxInRZ,
-	Rout, RAout, RBout, RZout,	BusMuxOut
+    // Temp registers
+//    .BusMuxInRZ(BusMuxInRZ),
+//    .BusMuxInRA(BusMuxInRA),
+//    .BusMuxInRB(BusMuxInRB),
+
+    // General-purpose registers
+    .BusMuxInR0(R0_data_out),
+    .BusMuxInR1(R1_data_out),
+    .BusMuxInR2(R2_data_out),
+    .BusMuxInR3(R3_data_out),
+    .BusMuxInR4(R4_data_out),
+    .BusMuxInR5(R5_data_out),
+    .BusMuxInR6(R6_data_out),
+    .BusMuxInR7(R7_data_out),
+    .BusMuxInR8(R8_data_out),
+    .BusMuxInR9(R9_data_out),
+    .BusMuxInR10(R10_data_out),
+    .BusMuxInR11(R11_data_out),
+    .BusMuxInR12(R12_data_out),
+    .BusMuxInR13(R13_data_out),
+    .BusMuxInR14(R14_data_out),
+    .BusMuxInR15(R15_data_out),
+
+    // Special registers
+    .BusMuxInPC(PC_data_out),
+	 
+	 .BusMuxInZlow(Zlow_data_out),
+	 .BusMuxInZhigh(Zhigh_data_out),
+	 
+	 .BusMuxInMDR(MDR_data_out),
+    .BusMuxInIR(IR_data_out),
+    .BusMuxInY(Y_data_out),
+    .BusMuxInHI(HI_data_out),
+    .BusMuxInLO(LO_data_out),
+	 
+	 
+	 
+	 .R0out(Rout[0]),
+    .R1out(Rout[1]),
+    .R2out(Rout[2]),
+    .R3out(Rout[3]),
+    .R4out(Rout[4]),
+    .R5out(Rout[5]),
+    .R6out(Rout[6]),
+    .R7out(Rout[7]),
+    .R8out(Rout[8]),
+    .R9out(Rout[9]),
+    .R10out(Rout[10]),
+    .R11out(Rout[11]),
+    .R12out(Rout[12]),
+    .R13out(Rout[13]),
+    .R14out(Rout[14]),
+    .R15out(Rout[15]),
+	 
+
+	 .PCout(PCout),
+    .MDRout(MDRout),
+    .HIout(HIout),
+    .LOout(LOout),
+    .Yout (Yout),
+	 
+	 
+	 .Zlowout(Zlowout),
+	 .Zhighout(Zhighout),
+
+	 
+    // Output
+	 
+    .BusMuxOut(BusMuxOut)
 );
 
 

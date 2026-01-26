@@ -21,13 +21,16 @@ module Bus (
     input [31:0] BusMuxInZlow,
     input [31:0] BusMuxInZhigh,
     input [31:0] BusMuxInMDR,
+	 input [31:0] BusMuxInIR,
     input [31:0] BusMuxInHI,
     input [31:0] BusMuxInLO,
+	 input [31:0] BusMuxInY,
+	 
     
 
     //Encoder
     input R0out, R1out, R2out, R3out, R4out, R5out, R6out, R7out, R8out, R9out, R10out, R11out, R12out, R13out, R14out, R15out,
-    input PCout, MDRout, Zlowout, Zhighout, HIout, LOout, 
+    input PCout, MDRout, IRout, Zlowout, Zhighout, HIout, LOout, Yout,
 
     output wire [31:0] BusMuxOut
 );
@@ -58,6 +61,8 @@ module Bus (
         if (LOout)    q = BusMuxInLO;
         if (Zlowout)  q = BusMuxInZlow;
         if (Zhighout) q = BusMuxInZhigh;
+		  if (Yout) 	 q = BusMuxInY;
+		  if (IRout)    q = BusMuxInIR;
     end
 
     assign BusMuxOut = q;
