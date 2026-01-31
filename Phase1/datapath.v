@@ -22,7 +22,7 @@ wire [31:0] MDR_data_in, MDR_data_out;
 
 
 wire [31:0] BusMuxOut, BusMuxInRZ, BusMuxInRA, BusMuxInRB;
-wire [31:0] zregin;
+wire [63:0] zregin;
 
 //General Purpose Registers
 wire [31:0] R0_data_out;
@@ -84,10 +84,46 @@ register LO(clear, clock, LOin, BusMuxOut, LO_data_out);
 register Zlow(clear, clock, Zlowin, zregin[31:0], Zlow_data_out);
 register Zhigh(clear, clock, Zhighin, zregin[63:32], Zhigh_data_out);
 
-// Adder and Z register
-adder add(A, BusMuxOut, zregin);
+// ALU wires
+wire [31:0] sub_32_out;
+wire [63:0] add_out;
+wire [63:0] sub_out;
+wire [63:0] mul_out;
+//temporary assignments
+wire ALU_SUB;
+wire ALU_MUL;
+assign ALU_SUB = 1'b0;
+assign ALU_MUL = 1'b0;
 
+// add unit (block A)
+adder add (
+    .A(Y_data_out),
+    .B(BusMuxOut),
+    .Result(add_out[31:0])
+);
+assign add_out[63:32] = 32'b0;
 
+// subtractor unit (block A)
+subtractor sub (
+    .A(Y_data_out),
+    .B(BusMuxOut),
+    .Result(sub_32_out)
+);
+assign sub_out[31:0]  = sub_32_out;
+assign sub_out[63:32] = 32'b0;
+
+// multiplier unit (block A)
+booth_multiplier mul (
+    .multiplicand(Y_data_out),
+    .multiplier(BusMuxOut),
+    .product(mul_out)
+);
+
+// ALU output MUX to Z 
+assign zregin =
+    (ALU_MUL) ? mul_out :
+    (ALU_SUB) ? sub_out :
+                add_out;
 
 // Bus
 Bus bus(
