@@ -2,6 +2,8 @@ module datapath(
 	input  wire clock, clear,
 	input  wire [31:0] A,
 	input  wire [31:0] RegisterImmediate,
+	input  wire [3:0] ALUop,
+	input  wire ALU_MUL,
 	
 	
 	input  wire [15:0] Rin,   // R0in ... R15in
@@ -85,32 +87,17 @@ register Zlow(clear, clock, Zlowin, zregin[31:0], Zlow_data_out);
 register Zhigh(clear, clock, Zhighin, zregin[63:32], Zhigh_data_out);
 
 // ALU wires
-wire [31:0] sub_32_out;
-wire [63:0] add_out;
-wire [63:0] sub_out;
+wire [31:0] alu_result;
+wire [63:0] alu_out;
 wire [63:0] mul_out;
-//temporary assignments
-wire ALU_SUB;
-wire ALU_MUL;
-assign ALU_SUB = 1'b0;
-assign ALU_MUL = 1'b0;
 
-// add unit (block A)
-adder add (
+ALU alu (
     .A(Y_data_out),
     .B(BusMuxOut),
-    .Result(add_out[31:0])
+    .op(ALUop),
+    .result(alu_result)
 );
-assign add_out[63:32] = 32'b0;
-
-// subtractor unit (block A)
-subtractor sub (
-    .A(Y_data_out),
-    .B(BusMuxOut),
-    .Result(sub_32_out)
-);
-assign sub_out[31:0]  = sub_32_out;
-assign sub_out[63:32] = 32'b0;
+assign alu_out = {32'b0, alu_result};
 
 // multiplier unit (block A)
 booth_multiplier mul (
@@ -122,8 +109,7 @@ booth_multiplier mul (
 // ALU output MUX to Z 
 assign zregin =
     (ALU_MUL) ? mul_out :
-    (ALU_SUB) ? sub_out :
-                add_out;
+                alu_out;
 
 // Bus
 Bus bus(
@@ -200,5 +186,3 @@ Bus bus(
 
 
 endmodule
-
-

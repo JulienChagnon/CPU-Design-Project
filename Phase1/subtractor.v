@@ -1,10 +1,8 @@
 module subtractor (
     input [31:0] A,
     input [31:0] B,
-    output [31:0] Result
+    output reg [31:0] Result
 );
-
-    reg [31:0] Result;
     reg [32:0] Carry;
     wire [31:0] B_inv; //contains one's complement of B
 

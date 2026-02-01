@@ -38,6 +38,7 @@ module Bus (
     reg [31:0] q;
 
     always @(*) begin
+        q = 32'b0;
         if (R0out)    q = BusMuxInR0;
         if (R1out)    q = BusMuxInR1;
         if (R2out)    q = BusMuxInR2;
@@ -68,4 +69,3 @@ module Bus (
     assign BusMuxOut = q;
 
 endmodule
-
