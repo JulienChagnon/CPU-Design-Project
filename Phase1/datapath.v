@@ -4,6 +4,7 @@ module datapath(
 	input  wire [31:0] RegisterImmediate,
 	input  wire [3:0] ALUop,
 	input  wire ALU_MUL,
+	input  wire ALU_DIV,
 	
 	
 	input  wire [15:0] Rin,   // R0in ... R15in
@@ -58,38 +59,183 @@ wire [31:0] Zhigh_data_out;
 // Devices
 
 
-register R0(clear, clock, Rin[0],  BusMuxOut, R0_data_out);
-register R1(clear, clock, Rin[1],  BusMuxOut, R1_data_out);
-register R2(clear, clock, Rin[2],  BusMuxOut, R2_data_out);
-register R3(clear, clock, Rin[3],  BusMuxOut, R3_data_out);
-register R4(clear, clock, Rin[4],  BusMuxOut, R4_data_out);
-register R5(clear, clock, Rin[5],  BusMuxOut, R5_data_out);
-register R6(clear, clock, Rin[6],  BusMuxOut, R6_data_out);
-register R7(clear, clock, Rin[7],  BusMuxOut, R7_data_out);
-register R8(clear, clock, Rin[8],  BusMuxOut, R8_data_out);
-register R9 (clear, clock, Rin[9],  BusMuxOut, R9_data_out);
-register R10(clear, clock, Rin[10], BusMuxOut, R10_data_out);
-register R11(clear, clock, Rin[11], BusMuxOut, R11_data_out);
-register R12(clear, clock, Rin[12], BusMuxOut, R12_data_out);
-register R13(clear, clock, Rin[13], BusMuxOut, R13_data_out);
-register R14(clear, clock, Rin[14], BusMuxOut, R14_data_out);
-register R15(clear, clock, Rin[15], BusMuxOut, R15_data_out);
+register R0(
+    .clear(clear),
+    .clock(clock),
+    .enable(Rin[0]),
+    .BusMuxOut(BusMuxOut),
+    .BusMuxIn(R0_data_out)
+);
+register R1(
+    .clear(clear),
+    .clock(clock),
+    .enable(Rin[1]),
+    .BusMuxOut(BusMuxOut),
+    .BusMuxIn(R1_data_out)
+);
+register R2(
+    .clear(clear),
+    .clock(clock),
+    .enable(Rin[2]),
+    .BusMuxOut(BusMuxOut),
+    .BusMuxIn(R2_data_out)
+);
+register R3(
+    .clear(clear),
+    .clock(clock),
+    .enable(Rin[3]),
+    .BusMuxOut(BusMuxOut),
+    .BusMuxIn(R3_data_out)
+);
+register R4(
+    .clear(clear),
+    .clock(clock),
+    .enable(Rin[4]),
+    .BusMuxOut(BusMuxOut),
+    .BusMuxIn(R4_data_out)
+);
+register R5(
+    .clear(clear),
+    .clock(clock),
+    .enable(Rin[5]),
+    .BusMuxOut(BusMuxOut),
+    .BusMuxIn(R5_data_out)
+);
+register R6(
+    .clear(clear),
+    .clock(clock),
+    .enable(Rin[6]),
+    .BusMuxOut(BusMuxOut),
+    .BusMuxIn(R6_data_out)
+);
+register R7(
+    .clear(clear),
+    .clock(clock),
+    .enable(Rin[7]),
+    .BusMuxOut(BusMuxOut),
+    .BusMuxIn(R7_data_out)
+);
+register R8(
+    .clear(clear),
+    .clock(clock),
+    .enable(Rin[8]),
+    .BusMuxOut(BusMuxOut),
+    .BusMuxIn(R8_data_out)
+);
+register R9(
+    .clear(clear),
+    .clock(clock),
+    .enable(Rin[9]),
+    .BusMuxOut(BusMuxOut),
+    .BusMuxIn(R9_data_out)
+);
+register R10(
+    .clear(clear),
+    .clock(clock),
+    .enable(Rin[10]),
+    .BusMuxOut(BusMuxOut),
+    .BusMuxIn(R10_data_out)
+);
+register R11(
+    .clear(clear),
+    .clock(clock),
+    .enable(Rin[11]),
+    .BusMuxOut(BusMuxOut),
+    .BusMuxIn(R11_data_out)
+);
+register R12(
+    .clear(clear),
+    .clock(clock),
+    .enable(Rin[12]),
+    .BusMuxOut(BusMuxOut),
+    .BusMuxIn(R12_data_out)
+);
+register R13(
+    .clear(clear),
+    .clock(clock),
+    .enable(Rin[13]),
+    .BusMuxOut(BusMuxOut),
+    .BusMuxIn(R13_data_out)
+);
+register R14(
+    .clear(clear),
+    .clock(clock),
+    .enable(Rin[14]),
+    .BusMuxOut(BusMuxOut),
+    .BusMuxIn(R14_data_out)
+);
+register R15(
+    .clear(clear),
+    .clock(clock),
+    .enable(Rin[15]),
+    .BusMuxOut(BusMuxOut),
+    .BusMuxIn(R15_data_out)
+);
 
 
-register PC(clear, clock, PCin, BusMuxOut, PC_data_out);
-register IR(clear, clock, IRin, BusMuxOut, IR_data_out);
-register Y(clear, clock, Yin, BusMuxOut, Y_data_out);
-register MDR(clear, clock, MDRin, BusMuxOut, MDR_data_out);
-register HI(clear, clock, HIin, BusMuxOut, HI_data_out);
-register LO(clear, clock, LOin, BusMuxOut, LO_data_out);
+register PC(
+    .clear(clear),
+    .clock(clock),
+    .enable(PCin),
+    .BusMuxOut(BusMuxOut),
+    .BusMuxIn(PC_data_out)
+);
+register IR(
+    .clear(clear),
+    .clock(clock),
+    .enable(IRin),
+    .BusMuxOut(BusMuxOut),
+    .BusMuxIn(IR_data_out)
+);
+register Y(
+    .clear(clear),
+    .clock(clock),
+    .enable(Yin),
+    .BusMuxOut(BusMuxOut),
+    .BusMuxIn(Y_data_out)
+);
+register MDR(
+    .clear(clear),
+    .clock(clock),
+    .enable(MDRin),
+    .BusMuxOut(BusMuxOut),
+    .BusMuxIn(MDR_data_out)
+);
+register HI(
+    .clear(clear),
+    .clock(clock),
+    .enable(HIin),
+    .BusMuxOut(BusMuxOut),
+    .BusMuxIn(HI_data_out)
+);
+register LO(
+    .clear(clear),
+    .clock(clock),
+    .enable(LOin),
+    .BusMuxOut(BusMuxOut),
+    .BusMuxIn(LO_data_out)
+);
 
-register Zlow(clear, clock, Zlowin, zregin[31:0], Zlow_data_out);
-register Zhigh(clear, clock, Zhighin, zregin[63:32], Zhigh_data_out);
+register Zlow(
+    .clear(clear),
+    .clock(clock),
+    .enable(Zlowin),
+    .BusMuxOut(zregin[31:0]),
+    .BusMuxIn(Zlow_data_out)
+);
+register Zhigh(
+    .clear(clear),
+    .clock(clock),
+    .enable(Zhighin),
+    .BusMuxOut(zregin[63:32]),
+    .BusMuxIn(Zhigh_data_out)
+);
 
 // ALU wires
 wire [31:0] alu_result;
 wire [63:0] alu_out;
 wire [63:0] mul_out;
+wire [63:0] div_out;
 
 ALU alu (
     .A(Y_data_out),
@@ -106,9 +252,16 @@ booth_multiplier mul (
     .product(mul_out)
 );
 
+divider div (
+    .dividend(Y_data_out),
+    .divisor(BusMuxOut),
+    .result(div_out)
+);
+
 // ALU output MUX to Z 
 assign zregin =
     (ALU_MUL) ? mul_out :
+    (ALU_DIV) ? div_out :
                 alu_out;
 
 // Bus

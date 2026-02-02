@@ -13,6 +13,16 @@ module ALU(
 	adder add_instance(A, B, add_result);
 	subtractor sub_instance(A, B, sub_result);
 	
+
+	// op=0 -> OR
+	// op=1 -> AND
+	// op=2 -> NOT(A)
+	// op=3 -> ADD
+	// op=4 -> SUB
+	// ...
+	// default -> 0
+
+
 	always @(*) begin
 		case(op)
 			0:	result = or_result;
