@@ -28,8 +28,6 @@ module shift_left_tb;
         shift_amount = 1; // 1 in binary is 00000000000000000000000000000001
         #10;   //expected output = 00000000000000000000000000001100 (12)
 
-        $display("Simulation complete.");
-        $finish;
     end
 
 endmodule

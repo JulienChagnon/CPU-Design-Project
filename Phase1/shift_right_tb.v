@@ -28,8 +28,6 @@ module shift_right_tb;
         shift_amount = 1;
         #10;   //expected output = 3
 
-        $display("Simulation complete.");
-        $finish;
     end
 
 endmodule

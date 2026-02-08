@@ -35,8 +35,7 @@ module booth_multiplier_tb;
         multiplicand = -8;
         multiplier   = -3;
         #10;
-
-        $display("Simulation complete.");
+        
         $finish;
     end
 

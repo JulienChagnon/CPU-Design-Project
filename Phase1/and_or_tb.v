@@ -32,9 +32,6 @@ module and_or_tb;
 		selection = 0;
 		#10;
 
-    
-		$display("Simulation complete.");
-		$finish;
 	end
 
 endmodule

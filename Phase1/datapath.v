@@ -2,6 +2,8 @@ module datapath(
 	input  wire clock, clear,
 	input  wire [31:0] A,
 	input  wire [31:0] RegisterImmediate,
+	input  wire Read,
+	input  wire [31:0] Mdatain,
 	input  wire [3:0] ALUop,
 	input  wire ALU_MUL,
 	input  wire ALU_DIV,
@@ -10,6 +12,7 @@ module datapath(
 	input  wire [15:0] Rin,   // R0in ... R15in
 	input  wire [15:0] Rout , // R0out ... R15out
 	
+	input  wire MARin, MARout,
 	input  wire PCin, PCout,
 	input  wire IRin, IRout,
 	input  wire Yin,  Yout,
@@ -21,7 +24,8 @@ module datapath(
 );
 
 
-wire [31:0] MDR_data_in, MDR_data_out;
+wire [31:0] MDR_data_out;
+wire [31:0] MDR_mux_out;
 
 
 wire [31:0] BusMuxOut, BusMuxInRZ, BusMuxInRA, BusMuxInRB;
@@ -180,6 +184,13 @@ register PC(
     .BusMuxOut(BusMuxOut),
     .BusMuxIn(PC_data_out)
 );
+register MAR(
+    .clear(clear),
+    .clock(clock),
+    .enable(MARin),
+    .BusMuxOut(BusMuxOut),
+    .BusMuxIn(MAR_data_out)
+);
 register IR(
     .clear(clear),
     .clock(clock),
@@ -198,7 +209,7 @@ register MDR(
     .clear(clear),
     .clock(clock),
     .enable(MDRin),
-    .BusMuxOut(BusMuxOut),
+    .BusMuxOut(MDR_mux_out),
     .BusMuxIn(MDR_data_out)
 );
 register HI(
@@ -264,6 +275,10 @@ assign zregin =
     (ALU_DIV) ? div_out :
                 alu_out;
 
+// MDR source select (Figure 4 in Phase 1 doc):
+// Read=1 takes data from memory input, otherwise from internal bus.
+assign MDR_mux_out = Read ? Mdatain : BusMuxOut;
+
 // Bus
 Bus bus(
     // Temp registers
@@ -291,6 +306,7 @@ Bus bus(
 
     // Special registers
     .BusMuxInPC(PC_data_out),
+    .BusMuxInMAR(MAR_data_out),
 	 
 	 .BusMuxInZlow(Zlow_data_out),
 	 .BusMuxInZhigh(Zhigh_data_out),
@@ -322,7 +338,9 @@ Bus bus(
 	 
 
 	 .PCout(PCout),
+	 .MARout(MARout),
     .MDRout(MDRout),
+	 .IRout(IRout),
     .HIout(HIout),
     .LOout(LOout),
     .Yout (Yout),

@@ -6,7 +6,7 @@ module rol_tb;
 	reg [31:0] Ra;
 	wire [31:0] Rz;
 
-	ror rotate(
+	rol rotate(
         .RotateBits(RotateBits),
         .Ra(Ra),
         .Rz(Rz)
