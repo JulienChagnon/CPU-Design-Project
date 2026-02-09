@@ -2,13 +2,13 @@
 
 module adder_tb;
 
-    // Clock and reset
+    // clock and clear
     reg Clock;
     reg clear;
 
     // Control buses
-    reg [15:0] Rin;
-    reg [15:0] Rout;
+    reg [15:0] Rin; // register write enable bus
+    reg [15:0] Rout; //register output enable bus
 
     // Control signals
     reg PCin, PCout;
@@ -21,20 +21,20 @@ module adder_tb;
     reg [3:0] ALUop;
 
     // ALU control
-    reg ALU_MUL, ALU_DIV;
+    reg ALU_MUL, ALU_DIV;   //select multiplier or divider path
 
-    //memory input
-    reg [31:0] Mdatain;
+    // Memory input
+    reg [31:0] Mdatain;     //data read from memory
 
-    // ALU opcode mapping (from your ALU.v)
+    // add operation code
     localparam ALU_ADD = 4'd3;
 
-    //finite state machine states
-    parameter Default  = 4'd0,
-              LoadR5a  = 4'd1,
-              LoadR5b  = 4'd2,
-              LoadR6a  = 4'd3,
-              LoadR6b  = 4'd4,
+    // FSM states
+    parameter Default  = 4'd0,  //reset state
+              LoadR5a  = 4'd1,  //load R5 (memory read)
+              LoadR5b  = 4'd2,  //load R5 (write)
+              LoadR6a  = 4'd3,  //load R6 (memory read)
+              LoadR6b  = 4'd4,  //load R6 (write)
               T0       = 4'd5,
               T1       = 4'd6,
               T2       = 4'd7,
@@ -42,9 +42,10 @@ module adder_tb;
               T4       = 4'd9,
               T5       = 4'd10;
 
+    //current state
     reg [3:0] Present_state = Default;
 
-    // DUT
+    // datapath under test
     datapath DUT (
         .clock(Clock),
         .clear(clear),
@@ -83,13 +84,13 @@ module adder_tb;
         $dumpvars(0, adder_tb);
     end
 
-    // Clock
+    // clock generator
     initial begin
         Clock = 0;
         forever #10 Clock = ~Clock;
     end
 
-    // FSM transitions
+    // FSM state transitions
     always @(posedge Clock) begin
         if (clear)
             Present_state <= Default;
@@ -134,29 +135,29 @@ module adder_tb;
 
         case (Present_state)
 
-            // Load R5 = 0x34
+            // Load constant into R5 (0x34)
             LoadR5a: begin
-                Mdatain = 32'h00000034;
+                Mdatain = 32'h00000034;     //value to load
                 Read = 1;
                 MDRin = 1;
             end
             LoadR5b: begin
                 MDRout = 1;
-                Rin[5] = 1;
+                Rin[5] = 1;     //write into R5
             end
 
-            // Load R6 = 0x45
+            // Load constant into R6 (0x45)
             LoadR6a: begin
-                Mdatain = 32'h00000045;
+                Mdatain = 32'h00000045;     //value to load
                 Read = 1;
                 MDRin = 1;
             end
             LoadR6b: begin
                 MDRout = 1;
-                Rin[6] = 1;
+                Rin[6] = 1;     //write into R6
             end
 
-            // Fetch (minimal, just for sequencing)
+            // fetch cyckle
             T0: begin
                 PCout = 1;
                 MARin = 1;
@@ -172,7 +173,7 @@ module adder_tb;
                 IRin = 1;
             end
 
-            // Execute ADD
+            //execute ADD
             T3: begin
                 Rout[5] = 1;   // R5 -> Y
                 Yin = 1;
@@ -180,13 +181,13 @@ module adder_tb;
 
             T4: begin
                 Rout[6] = 1;   // R6 -> ALU
-                ALUop = ALU_ADD;
-                Zlowin = 1;
+                ALUop = ALU_ADD;    //select add
+                Zlowin = 1;        //store result in Z
             end
 
             T5: begin
                 Zlowout = 1;
-                Rin[2] = 1;    // Result -> R2
+                Rin[2] = 1;    // write result to R2
             end
         endcase
     end
