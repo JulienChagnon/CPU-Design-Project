@@ -4,7 +4,6 @@ module neg(
 	);
 	
 	wire [31:0] not_out;
-	wire cout;
 	
 	not_32 not_32( //flip
 		.A(Ra), 
