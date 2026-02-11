@@ -1,4 +1,5 @@
 `timescale 1ns/10ps
+// add R2, R5, R6. R5 = 0x00000034, R6 = 0x00000045, Final R2 = 0x00000079
 
 module adder_tb;
 
@@ -16,7 +17,8 @@ module adder_tb;
     reg MDRin, MDRout;
     reg IRin;
     reg Yin;
-    reg Zlowin, Zlowout;
+    reg Zin, Zlowout;
+    reg IncPC;
     reg Read;
     reg [3:0] ALUop;
 
@@ -73,7 +75,7 @@ module adder_tb;
         .LOin(1'b0),
         .LOout(),
         .Zhighin(1'b0),
-        .Zlowin(Zlowin),
+        .Zlowin(Zin),
         .Zhighout(),
         .Zlowout(Zlowout)
     );
@@ -120,8 +122,9 @@ module adder_tb;
         MDRin    = 0;
         MDRout   = 0;
         Yin      = 0;
-        Zlowin   = 0;
+        Zin      = 0;
         Zlowout  = 0;
+        IncPC    = 0;
         ALUop    = 4'b0000;
         Mdatain  = 32'b0;
 
@@ -161,11 +164,16 @@ module adder_tb;
             T0: begin
                 PCout = 1;
                 MARin = 1;
+                IncPC = 1;
+                Zin = 1;
             end
 
             T1: begin
+                Zlowout = 1;
+                PCin = 1;
                 Read = 1;
                 MDRin = 1;
+                Mdatain = 32'h00000000;
             end
 
             T2: begin
@@ -182,7 +190,7 @@ module adder_tb;
             T4: begin
                 Rout[6] = 1;   // R6 -> ALU
                 ALUop = ALU_ADD;    //select add
-                Zlowin = 1;        //store result in Z
+                Zin = 1;        //store result in Z
             end
 
             T5: begin
