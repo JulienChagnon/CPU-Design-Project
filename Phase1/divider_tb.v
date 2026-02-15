@@ -169,7 +169,9 @@ module divider_tb;
 
             T4: begin
                 Rout[1] = 1;
-                ALU_DIV = 1;
+                ALU_MUL = 0;
+                ALU_DIV = 0;
+                ALUop = 4'd12;
                 Zin = 1;
             end
 

@@ -243,10 +243,7 @@ register Zhigh(
 );
 
 // ALU wires
-wire [31:0] alu_result;
-wire [63:0] alu_out;
-wire [63:0] mul_out;
-wire [63:0] div_out;
+wire [63:0] alu_result;
 
 ALU alu (
     .A(Y_data_out),
@@ -254,26 +251,9 @@ ALU alu (
     .op(ALUop),
     .result(alu_result)
 );
-assign alu_out = {32'b0, alu_result};
 
-// multiplier unit (block A)
-booth_multiplier mul (
-    .multiplicand(Y_data_out),
-    .multiplier(BusMuxOut),
-    .product(mul_out)
-);
-
-divider div (
-    .dividend(Y_data_out),
-    .divisor(BusMuxOut),
-    .result(div_out)
-);
-
-// ALU output MUX to Z 
-assign zregin =
-    (ALU_MUL) ? mul_out :
-    (ALU_DIV) ? div_out :
-                alu_out;
+// ALU output to Z
+assign zregin = alu_result;
 
 // MDR source select (Figure 4 in Phase 1 doc):
 // Read=1 takes data from memory input, otherwise from internal bus.
