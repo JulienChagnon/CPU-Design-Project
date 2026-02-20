@@ -1,14 +1,13 @@
 `timescale 1ns/10ps
 // shl R7, R0, R4. 
-// R0 = 0x52, R4 = 0x2, Final R7 = 0x208
 
 module shift_left_tb;
 
     reg Clock;
     reg clear;
 
-    reg [15:0] Rin;
-    reg [15:0] Rout;
+    reg [15:0] Rin;     //register input
+    reg [15:0] Rout;    //register output
 
     reg PCin, PCout;
     reg MARin;
@@ -20,12 +19,13 @@ module shift_left_tb;
     reg Read;
     reg [3:0] ALUop;
 
-    reg ALU_MUL, ALU_DIV;
+    reg ALU_MUL, ALU_DIV;   // ALU multiply and divide enables
 
-    reg [31:0] Mdatain;
+    reg [31:0] Mdatain;     //memory data input bus
 
-    localparam ALU_SHL = 4'd7;
+    localparam ALU_SHL = 4'd7;      // ALU operation code for shift left
 
+     //FSM state encoding
     parameter Default  = 4'd0,
               LoadR0a  = 4'd1,
               LoadR0b  = 4'd2,
@@ -38,8 +38,10 @@ module shift_left_tb;
               T4       = 4'd9,
               T5       = 4'd10;
 
+    //current FSM state
     reg [3:0] Present_state = Default;
 
+    //instatiate device under test (DUT)
     datapath DUT (
         .clock(Clock),
         .clear(clear),
@@ -72,19 +74,21 @@ module shift_left_tb;
         .Zlowout(Zlowout)
     );
 
+    // needed for simulation on MAC
     initial begin
         $dumpfile("shift_left_tb.vcd");
         $dumpvars(0, shift_left_tb);
     end
 
+   //clock generator
     initial begin
-        Clock = 0;
-        forever #10 Clock = ~Clock;
+        Clock = 0;                      //start clock low
+        forever #10 Clock = ~Clock;     // toggle every 10 ns
     end
 
     always @(posedge Clock) begin
         if (clear)
-            Present_state <= Default;
+            Present_state <= Default;               // on reset go to default state
         else begin
             case (Present_state)
                 Default  : Present_state <= LoadR0a;
@@ -97,11 +101,12 @@ module shift_left_tb;
                 T2       : Present_state <= T3;
                 T3       : Present_state <= T4;
                 T4       : Present_state <= T5;
-                T5       : Present_state <= T5;
+                T5       : Present_state <= T5;     //stay in T5 after shift complete
             endcase
         end
     end
 
+    //control signal logic (set all to default values and override in each state as needed)
     always @(*) begin
         Rin      = 16'b0;
         Rout     = 16'b0;
@@ -123,70 +128,73 @@ module shift_left_tb;
         ALU_MUL  = 0;
         ALU_DIV  = 0;
 
+        //load R0 with 0x34
         case (Present_state)
             LoadR0a: begin
-                Mdatain = 32'h00000034;
-                Read = 1;
-                MDRin = 1;
+                Mdatain = 32'h00000034;     //value onto bus
+                Read = 1;                   // Memory read
+                MDRin = 1;                  // load into MDR
             end
             LoadR0b: begin
-                MDRout = 1;
-                Rin[0] = 1;
+                MDRout = 1;                 // output from MDR
+                Rin[0] = 1;                 // load into R0
             end
 
             LoadR4a: begin
-                Mdatain = 32'h00000002;
-                Read = 1;
-                MDRin = 1;
+                Mdatain = 32'h00000002;     // put value onto bus
+                Read = 1;                   // Memory read
+                MDRin = 1;                  // load into MDR
             end
             LoadR4b: begin
-                MDRout = 1;
-                Rin[4] = 1;
+                MDRout = 1;                 // output from MDR
+                Rin[4] = 1;                 // load into R4
             end
 
             T0: begin
-                PCout = 1;
-                MARin = 1;
-                IncPC = 1;
-                Zin = 1;
+                PCout = 1;                  // output PC (not used in this test)
+                MARin = 1;                  //load MAR
+                IncPC = 1;                  //increment PC
+                Zin = 1;                    //Store result in Zin
             end
 
             T1: begin
-                Zlowout = 1;
-                PCin = 1;
-                Read = 1;
-                MDRin = 1;
-                Mdatain = 32'h00000000;
+                Zlowout = 1;                // Output Z low
+                PCin = 1;                   // Load PC with incremented value
+                Read = 1;                   // memory read
+                MDRin = 1;                  //load MDR with instruction
+                Mdatain = 32'h00000000;     // dummy instruction (not used in shl but simulates typical instruction fetch)
             end
 
             T2: begin
-                MDRout = 1;
-                IRin = 1;
+                MDRout = 1;                 //output from MDR
+                IRin = 1;                   // load into IR 
             end
 
             T3: begin
-                Rout[0] = 1;
-                Yin = 1;
+                Rout[0] = 1;                // output R0 (value to be shifted)
+                Yin = 1;                    // load into Y 
             end
 
             T4: begin
-                Rout[4] = 1;
-                ALUop = ALU_SHL;
-                Zin = 1;
+                Rout[4] = 1;                // output R4 (shift amount)
+                ALUop = ALU_SHL;            // set ALU to perform shift left
+                Zin = 1;                    // store result in Zin
             end
 
             T5: begin
-                Zlowout = 1;
-                Rin[7] = 1;
+                Zlowout = 1;                //output result of shift
+                Rin[7] = 1;                 // load into R7 (destination register for shl result)
             end
         endcase
     end
 
+    //reset pulse 
     initial begin
-        clear = 1;
-        #20 clear = 0;
+        clear = 1;      //assert reset
+        #20 clear = 0;  //release reset after 20 ns
     end
 
+    // needed for simulation on MAC
     initial begin
         #500;
         $display("Simulation complete.");
