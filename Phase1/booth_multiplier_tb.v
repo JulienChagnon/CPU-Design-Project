@@ -7,10 +7,10 @@ module booth_multiplier_tb;
     reg Clock;
     reg clear;
 
-    reg [15:0] Rin;
-    reg [15:0] Rout;
+    reg [15:0] Rin;     //register input 
+    reg [15:0] Rout;    //register output
 
-    reg PCin, PCout;
+    reg PCin, PCout;    
     reg MARin;
     reg MDRin, MDRout;
     reg IRin;
@@ -20,10 +20,11 @@ module booth_multiplier_tb;
     reg Read;
     reg [3:0] ALUop;
 
-    reg ALU_MUL, ALU_DIV;
+    reg ALU_MUL, ALU_DIV;   // ALU multiply and divide enables
 
-    reg [31:0] Mdatain;
+    reg [31:0] Mdatain;     //memory data input bus
 
+    //FSM state encoding
     parameter Default  = 4'd0,
               LoadR3a  = 4'd1,
               LoadR3b  = 4'd2,
@@ -36,13 +37,15 @@ module booth_multiplier_tb;
               T4       = 4'd9,
               T5       = 4'd10;
 
+    //current FSM state
     reg [3:0] Present_state = Default;
 
+    //instatiate device under test (DUT)
     datapath DUT (
         .clock(Clock),
         .clear(clear),
         .A(32'b0),
-        .RegisterImmediate(32'b0),
+        .RegisterImmediate(32'b0),  //no immediate value
         .Read(Read),
         .Mdatain(Mdatain),
         .ALUop(ALUop),
@@ -55,34 +58,37 @@ module booth_multiplier_tb;
         .PCin(PCin),
         .PCout(PCout),
         .IRin(IRin),
-        .IRout(),
+        .IRout(),       //unused IRout
         .Yin(Yin),
-        .Yout(),
+        .Yout(),        // unused Yout
         .MDRin(MDRin),
         .MDRout(MDRout),
-        .HIin(1'b0),
-        .HIout(),
-        .LOin(1'b0),
-        .LOout(),
-        .Zhighin(1'b0),
-        .Zlowin(Zin),
+        .HIin(1'b0),    // unused HIin
+        .HIout(),       // unused HIout
+        .LOin(1'b0),    // unused LOin
+        .LOout(),       // unused LOout
+        .Zhighin(1'b0), // unused Zhighin
+        .Zlowin(Zin),   // load Zlowin
         .Zhighout(),
         .Zlowout(Zlowout)
     );
 
+    // needed for simulation on MAC
     initial begin
         $dumpfile("booth_multiplier_tb.vcd");
         $dumpvars(0, booth_multiplier_tb);
     end
 
+    //clock generator
     initial begin
-        Clock = 0;
-        forever #10 Clock = ~Clock;
+        Clock = 0;                      //start clock low
+        forever #10 Clock = ~Clock;     // toggle every 10 ns
     end
 
+    //FSM state transitions
     always @(posedge Clock) begin
         if (clear)
-            Present_state <= Default;
+            Present_state <= Default;               // on reset go to default state
         else begin
             case (Present_state)
                 Default  : Present_state <= LoadR3a;
@@ -95,11 +101,12 @@ module booth_multiplier_tb;
                 T2       : Present_state <= T3;
                 T3       : Present_state <= T4;
                 T4       : Present_state <= T5;
-                T5       : Present_state <= T5;
+                T5       : Present_state <= T5;     //stay in T5 after multiplication complete
             endcase
         end
     end
 
+    //control signal logic (set all to default values and override in each state as needed)
     always @(*) begin
         Rin      = 16'b0;
         Rout     = 16'b0;
@@ -122,71 +129,75 @@ module booth_multiplier_tb;
         ALU_DIV  = 0;
 
         case (Present_state)
+            //load R3 = 0x54
             LoadR3a: begin
-                Mdatain = 32'h00000054;
-                Read = 1;
-                MDRin = 1;
+                Mdatain = 32'h00000054;     //put value on bus
+                Read = 1;                   // memory read
+                MDRin = 1;                  // load into MDR
             end
             LoadR3b: begin
-                MDRout = 1;
-                Rin[3] = 1;
+                MDRout = 1;                 // output from MDR
+                Rin[3] = 1;                 // load into R3
             end
 
+            //load R1 = 0x06
             LoadR1a: begin
-                Mdatain = 32'h00000006;
-                Read = 1;
-                MDRin = 1;
+                Mdatain = 32'h00000006;     //put value on bus
+                Read = 1;                   // memory read
+                MDRin = 1;                  // load into MDR
             end
             LoadR1b: begin
-                MDRout = 1;
-                Rin[1] = 1;
+                MDRout = 1;                 // output from MDR
+                Rin[1] = 1;                 // load into R1
             end
 
             T0: begin
-                PCout = 1;
-                MARin = 1;
-                IncPC = 1;
-                Zin = 1;
+                PCout = 1;                  //output PC 
+                MARin = 1;                  //load MAR
+                IncPC = 1;                  // increment PC
+                Zin = 1;                    // store result in Zin
             end
 
             T1: begin
-                Zlowout = 1;
-                PCin = 1;
-                Read = 1;
-                MDRin = 1;
-                Mdatain = 32'h00000000;
+                Zlowout = 1;                // Output Z low
+                PCin = 1;                   // Load PC with incremented value
+                Read = 1;                   // memory read
+                MDRin = 1;                  // load MDR
+                Mdatain = 32'h00000000;     // dummy instruction (not used in multiplication but simulates typical instruction fetch)
             end
 
             T2: begin
-                MDRout = 1;
-                IRin = 1;
+                MDRout = 1;                 //output from MDR
+                IRin = 1;                   // load into IR 
             end
 
             T3: begin
-                Rout[3] = 1;
-                Yin = 1;
+                Rout[3] = 1;                // output R3 (multiplicand)
+                Yin = 1;                    // load into Y
             end
 
             T4: begin
-                Rout[1] = 1;
-                ALU_MUL = 1;
-                ALU_DIV = 0;
-                ALUop = 4'd11;
-                Zin = 1;
+                Rout[1] = 1;                // output R1 (multiplier)
+                ALU_MUL = 1;                // enable multiply operation in ALU
+                ALU_DIV = 0;                // disable divide operation
+                ALUop = 4'd11;              // set ALU op code to multiplication
+                Zin = 1;                    // store result in Zin
             end
 
             T5: begin
-                Zlowout = 1;
-                Rin[3] = 1;
+                Zlowout = 1;                //output result
+                Rin[3] = 1;                 //write back to R3
             end
         endcase
     end
 
+    //reset pulse 
     initial begin
-        clear = 1;
-        #20 clear = 0;
+        clear = 1;      //assert reset
+        #20 clear = 0;  //release reset after 20 ns
     end
 
+    // needed for simulation on MAC
     initial begin
         #500;
         $display("Simulation complete.");
