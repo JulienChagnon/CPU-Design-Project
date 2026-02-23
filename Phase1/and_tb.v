@@ -1,8 +1,8 @@
 `timescale 1ns/10ps
-// ror R7, R0, R4
-// R0 = 0x00000009, R4 = 0x00000002, Final R7 = 0x40000002
+// and R2, R5, R6 
+// R5 = 0x00000034, R6 = 0x00000045, Final R2 = 0x00000004
 
-module ror_tb;
+module and_tb;
 
     reg Clock;
     reg clear;
@@ -24,13 +24,13 @@ module ror_tb;
 
     reg [31:0] Mdatain;
 
-    localparam ALU_ROR = 4'd8;
+    localparam ALU_AND = 4'd1;
 
     parameter Default  = 4'd0,
-              LoadR0a  = 4'd1,
-              LoadR0b  = 4'd2,
-              LoadR4a  = 4'd3,
-              LoadR4b  = 4'd4,
+              LoadR5a  = 4'd1,
+              LoadR5b  = 4'd2,
+              LoadR6a  = 4'd3,
+              LoadR6b  = 4'd4,
               T0       = 4'd5,
               T1       = 4'd6,
               T2       = 4'd7,
@@ -73,8 +73,8 @@ module ror_tb;
     );
 
     initial begin
-        $dumpfile("ror_tb.vcd");
-        $dumpvars(0, ror_tb);
+        $dumpfile("and_tb.vcd");
+        $dumpvars(0, and_tb);
     end
 
     initial begin
@@ -87,11 +87,11 @@ module ror_tb;
             Present_state <= Default;
         else begin
             case (Present_state)
-                Default  : Present_state <= LoadR0a;
-                LoadR0a  : Present_state <= LoadR0b;
-                LoadR0b  : Present_state <= LoadR4a;
-                LoadR4a  : Present_state <= LoadR4b;
-                LoadR4b  : Present_state <= T0;
+                Default  : Present_state <= LoadR5a;
+                LoadR5a  : Present_state <= LoadR5b;
+                LoadR5b  : Present_state <= LoadR6a;
+                LoadR6a  : Present_state <= LoadR6b;
+                LoadR6b  : Present_state <= T0;
                 T0       : Present_state <= T1;
                 T1       : Present_state <= T2;
                 T2       : Present_state <= T3;
@@ -124,24 +124,24 @@ module ror_tb;
         ALU_DIV  = 0;
 
         case (Present_state)
-            LoadR0a: begin
-                Mdatain = 32'h00000009;
+            LoadR5a: begin
+                Mdatain = 32'h00000034;
                 Read = 1;
                 MDRin = 1;
             end
-            LoadR0b: begin
+            LoadR5b: begin
                 MDRout = 1;
-                Rin[0] = 1;
+                Rin[5] = 1;
             end
 
-            LoadR4a: begin
-                Mdatain = 32'h00000002;
+            LoadR6a: begin
+                Mdatain = 32'h00000045;
                 Read = 1;
                 MDRin = 1;
             end
-            LoadR4b: begin
+            LoadR6b: begin
                 MDRout = 1;
-                Rin[4] = 1;
+                Rin[6] = 1;
             end
 
             T0: begin
@@ -165,19 +165,19 @@ module ror_tb;
             end
 
             T3: begin
-                Rout[0] = 1;
+                Rout[5] = 1;
                 Yin = 1;
             end
 
             T4: begin
-                Rout[4] = 1;
-                ALUop = ALU_ROR;
+                Rout[6] = 1;
+                ALUop = ALU_AND;
                 Zin = 1;
             end
 
             T5: begin
                 Zlowout = 1;
-                Rin[7] = 1;
+                Rin[2] = 1;
             end
         endcase
     end
