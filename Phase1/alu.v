@@ -3,7 +3,8 @@ module ALU(
 	input wire [3:0] op, 
 	output reg [63:0] result
 );
-	
+
+	//wires to hold the output of each ALU operation
 	wire [31:0] and_result, or_result;
 	wire [31:0] not_result, add_result, sub_result;
 	wire [31:0] shr_result, shra_result, shl_result;
@@ -12,6 +13,7 @@ module ALU(
 	wire signed [63:0] mul_result;
 	wire [63:0] div_result;
 
+	//instantiate each ALU operation module
 	and_or or_instance(A, B, 1'b0, or_result);
 	and_or and_instance(A, B, 1'b1, and_result);
 	not_32 not_instance(B, not_result);
