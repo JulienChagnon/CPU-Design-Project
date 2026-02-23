@@ -25,9 +25,12 @@ module ALU(
 	neg neg_instance(neg_result, B);
 	booth_multiplier mul_instance(A, B, mul_result);
 	divider div_instance(A, B, div_result);
+	ror ror_instance(ror_result, A, B);
+	rol rol_instance(rol_result, A, B);
+	
 
-	assign ror_result = (B[4:0] == 5'd0) ? A : ((A >> B[4:0]) | (A << (6'd32 - {1'b0, B[4:0]})));
-	assign rol_result = (B[4:0] == 5'd0) ? A : ((A << B[4:0]) | (A >> (6'd32 - {1'b0, B[4:0]})));
+	//assign ror_result = (B[4:0] == 5'd0) ? A : ((A >> B[4:0]) | (A << (6'd32 - {1'b0, B[4:0]})));
+	//assign rol_result = (B[4:0] == 5'd0) ? A : ((A << B[4:0]) | (A >> (6'd32 - {1'b0, B[4:0]})));
 
 	// op mapping used by datapath testbenches:
 	// 0: OR, 1: AND, 2: NOT(B), 3: ADD, 4: SUB,
