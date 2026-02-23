@@ -20,7 +20,6 @@ module divider_tb;
     reg Read;
     reg [3:0] ALUop;
 
-    reg ALU_MUL, ALU_DIV;
 
     reg [31:0] Mdatain;
 
@@ -46,8 +45,6 @@ module divider_tb;
         .Read(Read),
         .Mdatain(Mdatain),
         .ALUop(ALUop),
-        .ALU_MUL(ALU_MUL),
-        .ALU_DIV(ALU_DIV),
         .Rin(Rin),
         .Rout(Rout),
         .MARin(MARin),
@@ -118,9 +115,6 @@ module divider_tb;
         MARin    = 0;
         IRin     = 0;
 
-        ALU_MUL  = 0;
-        ALU_DIV  = 0;
-
         case (Present_state)
             LoadR3a: begin
                 Mdatain = 32'h00000054;
@@ -169,8 +163,6 @@ module divider_tb;
 
             T4: begin
                 Rout[1] = 1;
-                ALU_MUL = 0;
-                ALU_DIV = 0;
                 ALUop = 4'd12;
                 Zin = 1;
             end

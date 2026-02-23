@@ -20,8 +20,6 @@ module shift_right_arithmetic_tb;
     reg Read;
     reg [3:0] ALUop;
 
-    reg ALU_MUL, ALU_DIV;
-
     reg [31:0] Mdatain;
 
     localparam ALU_SHRA = 4'd6;
@@ -48,8 +46,6 @@ module shift_right_arithmetic_tb;
         .Read(Read),
         .Mdatain(Mdatain),
         .ALUop(ALUop),
-        .ALU_MUL(ALU_MUL),
-        .ALU_DIV(ALU_DIV),
         .Rin(Rin),
         .Rout(Rout),
         .MARin(MARin),
@@ -119,9 +115,6 @@ module shift_right_arithmetic_tb;
         PCout    = 0;
         MARin    = 0;
         IRin     = 0;
-
-        ALU_MUL  = 0;
-        ALU_DIV  = 0;
 
         case (Present_state)
             LoadR0a: begin

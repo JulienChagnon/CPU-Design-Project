@@ -20,8 +20,6 @@ module booth_multiplier_tb;
     reg Read;
     reg [3:0] ALUop;
 
-    reg ALU_MUL, ALU_DIV;   // ALU multiply and divide enables
-
     reg [31:0] Mdatain;     //memory data input bus
 
     //FSM state encoding
@@ -49,8 +47,6 @@ module booth_multiplier_tb;
         .Read(Read),
         .Mdatain(Mdatain),
         .ALUop(ALUop),
-        .ALU_MUL(ALU_MUL),
-        .ALU_DIV(ALU_DIV),
         .Rin(Rin),
         .Rout(Rout),
         .MARin(MARin),
@@ -125,9 +121,6 @@ module booth_multiplier_tb;
         MARin    = 0;
         IRin     = 0;
 
-        ALU_MUL  = 0;
-        ALU_DIV  = 0;
-
         case (Present_state)
             //load R3 = 0x54
             LoadR3a: begin
@@ -178,8 +171,6 @@ module booth_multiplier_tb;
 
             T4: begin
                 Rout[1] = 1;                // output R1 (multiplier)
-                ALU_MUL = 1;                // enable multiply operation in ALU
-                ALU_DIV = 0;                // disable divide operation
                 ALUop = 4'd11;              // set ALU op code to multiplication
                 Zin = 1;                    // store result in Zin
             end

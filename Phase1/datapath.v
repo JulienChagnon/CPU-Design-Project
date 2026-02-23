@@ -5,8 +5,6 @@ module datapath(
 	input  wire Read,
 	input  wire [31:0] Mdatain,
 	input  wire [3:0] ALUop,
-	input  wire ALU_MUL,
-	input  wire ALU_DIV,
 	
 	
 	input  wire [15:0] Rin,   // R0in ... R15in

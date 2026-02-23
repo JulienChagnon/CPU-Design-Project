@@ -19,8 +19,6 @@ module shift_left_tb;
     reg Read;
     reg [3:0] ALUop;
 
-    reg ALU_MUL, ALU_DIV;   // ALU multiply and divide enables
-
     reg [31:0] Mdatain;     //memory data input bus
 
     localparam ALU_SHL = 4'd7;      // ALU operation code for shift left
@@ -50,8 +48,6 @@ module shift_left_tb;
         .Read(Read),
         .Mdatain(Mdatain),
         .ALUop(ALUop),
-        .ALU_MUL(ALU_MUL),
-        .ALU_DIV(ALU_DIV),
         .Rin(Rin),
         .Rout(Rout),
         .MARin(MARin),
@@ -124,9 +120,6 @@ module shift_left_tb;
         PCout    = 0;
         MARin    = 0;
         IRin     = 0;
-
-        ALU_MUL  = 0;
-        ALU_DIV  = 0;
 
         //load R0 with 0x34
         case (Present_state)

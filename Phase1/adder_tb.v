@@ -23,7 +23,6 @@ module adder_tb;
     reg [3:0] ALUop;
 
     // ALU control
-    reg ALU_MUL, ALU_DIV;   //select multiplier or divider path
 
     // Memory input
     reg [31:0] Mdatain;     //data read from memory
@@ -56,8 +55,6 @@ module adder_tb;
         .Read(Read),
         .Mdatain(Mdatain),
         .ALUop(ALUop),
-        .ALU_MUL(ALU_MUL),
-        .ALU_DIV(ALU_DIV),
         .Rin(Rin),
         .Rout(Rout),
         .MARin(MARin),
@@ -132,9 +129,6 @@ module adder_tb;
         PCout    = 0;
         MARin    = 0;
         IRin     = 0;
-
-        ALU_MUL  = 0;
-        ALU_DIV  = 0;
 
         case (Present_state)
 
