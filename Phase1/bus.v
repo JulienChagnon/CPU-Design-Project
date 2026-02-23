@@ -1,5 +1,6 @@
 module Bus (
     //Mux
+	//all possible sources that can drive the bus
     input [31:0] BusMuxInR0,
     input [31:0] BusMuxInR1,
     input [31:0] BusMuxInR2,
@@ -17,6 +18,7 @@ module Bus (
     input [31:0] BusMuxInR14,
     input [31:0] BusMuxInR15,
 
+	//special registers that can also drive the bus
     input [31:0] BusMuxInPC,
     input [31:0] BusMuxInMAR,
     input [31:0] BusMuxInZlow,
@@ -30,12 +32,14 @@ module Bus (
     
 
     //Encoder
+	// if one of these is a one the registers value will be placed on the bus
     input R0out, R1out, R2out, R3out, R4out, R5out, R6out, R7out, R8out, R9out, R10out, R11out, R12out, R13out, R14out, R15out,
     input PCout, MARout, MDRout, IRout, Zlowout, Zhighout, HIout, LOout, Yout,
 
     output wire [31:0] BusMuxOut
 );
 
+	// internal selected bus value
     reg [31:0] q;
 
     always @(*) begin
