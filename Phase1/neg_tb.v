@@ -1,6 +1,6 @@
 `timescale 1ns/10ps
 // neg R4, R7
-// R7 = 0x00000005, Final R4 = 0xFFFFFFFB
+// R7 = 0x05, Final R4 = 0xFFFFFFFB
 
 module neg_tb;
 
@@ -163,7 +163,6 @@ module neg_tb;
 
     initial begin
         #500;
-        $display("Simulation complete.");
         $finish;
     end
 

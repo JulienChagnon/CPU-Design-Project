@@ -1,6 +1,6 @@
 `timescale 1ns/10ps
 // shr R7, R0, R4. 
-// R0 = 0x00000034, R4 = 0x00000002, Final R7 = 0x0000000D
+// R0 = 0b00110100, R4 = 0b00000010, Final R7 = 0b00001101
 
 module shift_right_tb;
 
@@ -182,7 +182,6 @@ module shift_right_tb;
 
     initial begin
         #500;
-        $display("Simulation complete.");
         $finish;
     end
 

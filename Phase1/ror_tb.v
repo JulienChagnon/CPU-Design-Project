@@ -1,6 +1,6 @@
 `timescale 1ns/10ps
 // ror R7, R0, R4
-// R0 = 0x00000009, R4 = 0x00000002, Final R7 = 0x40000002
+// R0 = 0b00001001, R4 = 0b00000010, Final R7 = 0b01000000_00000000_00000000_00000010
 
 module ror_tb;
 
@@ -182,7 +182,6 @@ module ror_tb;
 
     initial begin
         #500;
-        $display("Simulation complete.");
         $finish;
     end
 

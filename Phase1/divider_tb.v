@@ -1,6 +1,6 @@
 `timescale 1ns/10ps
 // div R3, R1, R3.
-// R1 = 0x00000006, R3 = 0x00000054, Final R3 = 0x0000000E
+// R1 = 0x06, R3 = 0x54, Final R3 = 0x0E
 
 module divider_tb;
 
@@ -15,7 +15,7 @@ module divider_tb;
     reg MDRin, MDRout;
     reg IRin;
     reg Yin;
-    reg Zin, Zlowout;
+    reg Zin, Zhighin, Zlowout, Zhighout;
     reg IncPC;
     reg Read;
     reg [3:0] ALUop;
@@ -33,7 +33,8 @@ module divider_tb;
               T2       = 4'd7,
               T3       = 4'd8,
               T4       = 4'd9,
-              T5       = 4'd10;
+              T5       = 4'd10,
+              T6       = 4'd11;
 
     reg [3:0] Present_state = Default;
 
@@ -61,9 +62,9 @@ module divider_tb;
         .HIout(),
         .LOin(1'b0),
         .LOout(),
-        .Zhighin(1'b0),
+        .Zhighin(Zhighin),
         .Zlowin(Zin),
-        .Zhighout(),
+        .Zhighout(Zhighout),
         .Zlowout(Zlowout)
     );
 
@@ -92,7 +93,8 @@ module divider_tb;
                 T2       : Present_state <= T3;
                 T3       : Present_state <= T4;
                 T4       : Present_state <= T5;
-                T5       : Present_state <= T5;
+                T5       : Present_state <= T6;
+                T6       : Present_state <= T6;
             endcase
         end
     end
@@ -105,7 +107,9 @@ module divider_tb;
         MDRout   = 0;
         Yin      = 0;
         Zin      = 0;
+        Zhighin  = 0;
         Zlowout  = 0;
+        Zhighout = 0;
         IncPC    = 0;
         ALUop    = 4'b0000;
         Mdatain  = 32'b0;
@@ -165,11 +169,17 @@ module divider_tb;
                 Rout[1] = 1;
                 ALUop = 4'd12;
                 Zin = 1;
+                Zhighin = 1;
             end
 
             T5: begin
                 Zlowout = 1;
                 Rin[3] = 1;
+            end
+
+            T6: begin
+                Zhighout = 1;
+                Rin[2] = 1;
             end
         endcase
     end
@@ -181,7 +191,6 @@ module divider_tb;
 
     initial begin
         #500;
-        $display("Simulation complete.");
         $finish;
     end
 

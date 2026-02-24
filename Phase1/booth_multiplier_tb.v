@@ -1,6 +1,6 @@
 `timescale 1ns/10ps
 // mul R3, R1, R3.
-// R1 = 0x00000006, R3 = 0x00000054, Final R3 = 0x000001F8
+// R1 = 0x06, R3 = 0x54, Final R3 = 0x1F8
 
 module booth_multiplier_tb;
 
@@ -15,7 +15,7 @@ module booth_multiplier_tb;
     reg MDRin, MDRout;
     reg IRin;
     reg Yin;
-    reg Zin, Zlowout;
+    reg Zin, Zhighin, Zlowout, Zhighout;
     reg IncPC;
     reg Read;
     reg [3:0] ALUop;
@@ -33,7 +33,8 @@ module booth_multiplier_tb;
               T2       = 4'd7,
               T3       = 4'd8,
               T4       = 4'd9,
-              T5       = 4'd10;
+              T5       = 4'd10,
+              T6       = 4'd11;
 
     //current FSM state
     reg [3:0] Present_state = Default;
@@ -63,9 +64,9 @@ module booth_multiplier_tb;
         .HIout(),       // unused HIout
         .LOin(1'b0),    // unused LOin
         .LOout(),       // unused LOout
-        .Zhighin(1'b0), // unused Zhighin
+        .Zhighin(Zhighin),
         .Zlowin(Zin),   // load Zlowin
-        .Zhighout(),
+        .Zhighout(Zhighout),
         .Zlowout(Zlowout)
     );
 
@@ -97,7 +98,8 @@ module booth_multiplier_tb;
                 T2       : Present_state <= T3;
                 T3       : Present_state <= T4;
                 T4       : Present_state <= T5;
-                T5       : Present_state <= T5;     //stay in T5 after multiplication complete
+                T5       : Present_state <= T6;
+                T6       : Present_state <= T6;     //stay in T6 after multiplication complete
             endcase
         end
     end
@@ -111,7 +113,9 @@ module booth_multiplier_tb;
         MDRout   = 0;
         Yin      = 0;
         Zin      = 0;
+        Zhighin  = 0;
         Zlowout  = 0;
+        Zhighout = 0;
         IncPC    = 0;
         ALUop    = 4'b0000;
         Mdatain  = 32'b0;
@@ -172,12 +176,18 @@ module booth_multiplier_tb;
             T4: begin
                 Rout[1] = 1;                // output R1 (multiplier)
                 ALUop = 4'd11;              // set ALU op code to multiplication
-                Zin = 1;                    // store result in Zin
+                Zin = 1;                    // store low 32b in Zlow
+                Zhighin = 1;                // store high 32b in Zhigh
             end
 
             T5: begin
                 Zlowout = 1;                //output result
                 Rin[3] = 1;                 //write back to R3
+            end
+
+            T6: begin
+                Zhighout = 1;               //output high half of mul result
+                Rin[2] = 1;                 //write high half to R2
             end
         endcase
     end
@@ -191,7 +201,6 @@ module booth_multiplier_tb;
     // needed for simulation on MAC
     initial begin
         #500;
-        $display("Simulation complete.");
         $finish;
     end
 

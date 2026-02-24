@@ -1,6 +1,6 @@
 `timescale 1ns/10ps
 // not R4, R7
-// R7 = 0x00000005, Final R4 = 0xFFFFFFFA
+// R7 = 0b00000101, Final R4 = 0b11111111_11111111_11111111_11111010
 
 module not_tb;
 
@@ -163,7 +163,6 @@ module not_tb;
 
     initial begin
         #500;
-        $display("Simulation complete.");
         $finish;
     end
 

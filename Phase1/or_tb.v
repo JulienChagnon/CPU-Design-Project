@@ -1,6 +1,6 @@
 `timescale 1ns/10ps
 // or R2, R5, R6 
-// R5 = 0x00000034, R6 = 0x00000045, Final R2 = 0x00000075
+// R5 = 0x34, R6 = 0x45, Final R2 = 0x75
 
 module or_tb;
 
@@ -182,7 +182,6 @@ module or_tb;
 
     initial begin
         #500;
-        $display("Simulation complete.");
         $finish;
     end
 

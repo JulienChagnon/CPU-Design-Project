@@ -1,6 +1,6 @@
 `timescale 1ns/10ps
 // rol R7, R0, R4
-// R0 = 0x00000009, R4 = 0x00000002, Final R7 = 0x00000024
+// R0 = 0b00001001, R4 = 0b00000010, Final R7 = 0b00100100
 
 module rol_tb;
 
@@ -182,7 +182,6 @@ module rol_tb;
 
     initial begin
         #500;
-        $display("Simulation complete.");
         $finish;
     end
 

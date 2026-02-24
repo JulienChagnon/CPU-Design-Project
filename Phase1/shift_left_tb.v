@@ -1,5 +1,6 @@
 `timescale 1ns/10ps
 // shl R7, R0, R4. 
+// R0 = 0b00110100, R4 = 0b00000010, Final R7 = 0b11010000
 
 module shift_left_tb;
 
@@ -190,7 +191,6 @@ module shift_left_tb;
     // needed for simulation on MAC
     initial begin
         #500;
-        $display("Simulation complete.");
         $finish;
     end
 

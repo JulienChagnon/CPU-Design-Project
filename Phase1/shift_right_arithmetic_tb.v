@@ -1,6 +1,6 @@
 `timescale 1ns/10ps
-// shra R7, R0, R4. 
-// R0 = 0xFFFFFFF0, R4 = 0x00000002, Final R7 = 0xFFFFFFFC
+// shra R7, R0, R4
+// R0 = 0b11110000, R4 = 0b00000010, Final R7 = 0b11111100
 
 module shift_right_arithmetic_tb;
 
@@ -182,7 +182,6 @@ module shift_right_arithmetic_tb;
 
     initial begin
         #500;
-        $display("Simulation complete.");
         $finish;
     end
 
