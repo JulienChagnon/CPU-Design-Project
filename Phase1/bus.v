@@ -20,21 +20,20 @@ module Bus (
 
 	//special registers that can also drive the bus
     input [31:0] BusMuxInPC,
-    input [31:0] BusMuxInMAR,
     input [31:0] BusMuxInZlow,
     input [31:0] BusMuxInZhigh,
     input [31:0] BusMuxInMDR,
-	 input [31:0] BusMuxInIR,
+	input [31:0] BusMuxInIR,
     input [31:0] BusMuxInHI,
     input [31:0] BusMuxInLO,
-	 input [31:0] BusMuxInY,
+	input [31:0] BusMuxInY,
 	 
     
 
     //Encoder
 	// if one of these is a one the registers value will be placed on the bus
     input R0out, R1out, R2out, R3out, R4out, R5out, R6out, R7out, R8out, R9out, R10out, R11out, R12out, R13out, R14out, R15out,
-    input PCout, MARout, MDRout, IRout, Zlowout, Zhighout, HIout, LOout, Yout,
+    input PCout, MDRout, IRout, Zlowout, Zhighout, HIout, LOout, Yout,
 
     output wire [31:0] BusMuxOut
 );
@@ -60,16 +59,14 @@ module Bus (
         if (R13out)   q = BusMuxInR13;
         if (R14out)   q = BusMuxInR14;
         if (R15out)   q = BusMuxInR15;
-
         if (PCout)    q = BusMuxInPC;
-        if (MARout)   q = BusMuxInMAR;
         if (MDRout)   q = BusMuxInMDR;
         if (HIout)    q = BusMuxInHI;
         if (LOout)    q = BusMuxInLO;
         if (Zlowout)  q = BusMuxInZlow;
         if (Zhighout) q = BusMuxInZhigh;
-		  if (Yout) 	 q = BusMuxInY;
-		  if (IRout)    q = BusMuxInIR;
+		if (Yout) 	  q = BusMuxInY;
+		if (IRout)    q = BusMuxInIR;
     end
 
     assign BusMuxOut = q;
