@@ -3,14 +3,14 @@ module datapath(
 	input  wire [31:0] A,
 	input  wire [31:0] RegisterImmediate,
 	input  wire Read,
-	input  wire [31:0] Mdatain,
+    input  wire Write,
 	input  wire [3:0] ALUop,
 	
 	
 	input  wire [15:0] Rin,   // R0in ... R15in
 	input  wire [15:0] Rout , // R0out ... R15out
 	
-	input  wire MARin, MARout,
+	input  wire MARin,
 	input  wire PCin, PCout,
 	input  wire IRin, IRout,
 	input  wire Yin,  Yout,
@@ -22,11 +22,7 @@ module datapath(
 );
 
 
-wire [31:0] MDR_data_out;
-wire [31:0] MDR_mux_out;
-
-
-wire [31:0] BusMuxOut, BusMuxInRZ, BusMuxInRA, BusMuxInRB;
+wire [31:0] BusMuxOut, BusMuxInRZ, BusMuxInRA, BusMuxInRB, BusMuxInMDR;
 wire [63:0] zregin;
 
 //General Purpose Registers
@@ -51,7 +47,6 @@ wire [31:0] R15_data_out;
 wire [31:0] PC_data_out;
 wire [31:0] IR_data_out;
 wire [31:0] Y_data_out;
-wire [31:0] MAR_data_out;
 wire [31:0] HI_data_out;
 wire [31:0] LO_data_out;
 
@@ -182,13 +177,6 @@ register PC(
     .BusMuxOut(BusMuxOut),
     .BusMuxIn(PC_data_out)
 );
-register MAR(
-    .clear(clear),
-    .clock(clock),
-    .enable(MARin),
-    .BusMuxOut(BusMuxOut),
-    .BusMuxIn(MAR_data_out)
-);
 register IR(
     .clear(clear),
     .clock(clock),
@@ -202,13 +190,6 @@ register Y(
     .enable(Yin),
     .BusMuxOut(BusMuxOut),
     .BusMuxIn(Y_data_out)
-);
-register MDR(
-    .clear(clear),
-    .clock(clock),
-    .enable(MDRin),
-    .BusMuxOut(MDR_mux_out),
-    .BusMuxIn(MDR_data_out)
 );
 register HI(
     .clear(clear),
@@ -239,6 +220,17 @@ register Zhigh(
     .BusMuxOut(zregin[63:32]),
     .BusMuxIn(Zhigh_data_out)
 );
+memory_subsystem mem_sys (
+    .clk(clock),
+    .clear(clear),
+    .MARin(MARin),
+    .MDRin(MDRin),
+    .MDRout(MDRout),
+    .Read(Read),
+    .Write(Write),
+    .BusMuxOut(BusMuxOut),
+    .BusMuxIn_MDR(BusMuxIn_MDR)
+);
 
 // ALU wires
 wire [63:0] alu_result;
@@ -252,10 +244,6 @@ ALU alu (
 
 // ALU output to Z
 assign zregin = alu_result;
-
-// MDR source select (Figure 4 in Phase 1 doc):
-// Read=1 takes data from memory input, otherwise from internal bus.
-assign MDR_mux_out = Read ? Mdatain : BusMuxOut;
 
 // Bus
 Bus bus(
@@ -284,12 +272,11 @@ Bus bus(
 
     // Special registers
     .BusMuxInPC(PC_data_out),
-    .BusMuxInMAR(MAR_data_out),
 	 
-	 .BusMuxInZlow(Zlow_data_out),
-	 .BusMuxInZhigh(Zhigh_data_out),
+	.BusMuxInZlow(Zlow_data_out),
+	.BusMuxInZhigh(Zhigh_data_out),
 	 
-	 .BusMuxInMDR(MDR_data_out),
+	.BusMuxInMDR(BusMuxIn_MDR),
     .BusMuxInIR(IR_data_out),
     .BusMuxInY(Y_data_out),
     .BusMuxInHI(HI_data_out),
@@ -316,7 +303,6 @@ Bus bus(
 	 
 
 	 .PCout(PCout),
-	 .MARout(MARout),
     .MDRout(MDRout),
 	 .IRout(IRout),
     .HIout(HIout),
