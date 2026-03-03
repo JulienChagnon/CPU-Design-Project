@@ -17,12 +17,12 @@ module datapath(
 	input  wire MDRin, MDRout,
 	input  wire HIin, HIout,
 	input  wire LOin, LOout,
-	input wire Zhighin, Zlowin, Zhighout, Zlowout
-
+	input wire Zhighin, Zlowin, Zhighout, Zlowout,
+    input wire BAout       // BAout signal gates 0’s onto the bus if R0 is selected, or it gates the selected register’s contents if one of the registers R1 – R15 is selected
 );
 
 
-wire [31:0] BusMuxOut, BusMuxInRZ, BusMuxInRA, BusMuxInRB, BusMuxInMDR;
+wire [31:0] BusMuxOut, BusMuxInRZ, BusMuxInRA, BusMuxInRB, BusMuxIn_MDR;
 wire [63:0] zregin;
 
 //General Purpose Registers
@@ -53,8 +53,14 @@ wire [31:0] LO_data_out;
 wire [31:0] Zlow_data_out;
 wire [31:0] Zhigh_data_out;
 
-// Devices
+//for revising register R0
+wire [31:0] R0_bus_out;         //modified bus output 
 
+//if BAout is 1 then output 0 onto the bus instead of R0's value
+//then R0 can be used as a zero register
+assign R0_bus_out = BAout ? 32'b0 : R0_data_out;
+
+// Devices
 
 register R0(
     .clear(clear),
@@ -253,7 +259,7 @@ Bus bus(
 //    .BusMuxInRB(BusMuxInRB),
 
     // General-purpose registers
-    .BusMuxInR0(R0_data_out),
+    .BusMuxInR0(R0_bus_out),            //put modified R0 bus output here
     .BusMuxInR1(R1_data_out),
     .BusMuxInR2(R2_data_out),
     .BusMuxInR3(R3_data_out),
