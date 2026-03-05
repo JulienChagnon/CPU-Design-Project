@@ -161,18 +161,6 @@ initial begin
 end
 
 
-// Monitor values
-initial begin
-    $monitor("time=%0t BAout=%b R0=%h R0_bus=%h Bus=%h",
-        $time,
-        BAout,
-        DUT.R0_data_out,
-        DUT.R0_bus_out,
-        DUT.BusMuxOut
-    );
-end
-
-
 // Finish
 initial begin
     #200;
