@@ -18,7 +18,13 @@ module datapath(
 	input  wire HIin, HIout,
 	input  wire LOin, LOout,
 	input wire Zhighin, Zlowin, Zhighout, Zlowout,
-    input wire BAout       // BAout signal gates 0’s onto the bus if R0 is selected, or it gates the selected register’s contents if one of the registers R1 – R15 is selected
+    input wire BAout,      // BAout signal gates 0's onto the bus if R0 is selected
+
+    // Phase 2 select/encode controls (optional; use UseSelectEncode=1)
+    input wire UseSelectEncode,
+    input wire Gra, Grb, Grc,
+    input wire Rin_ctrl, Rout_ctrl,
+    input wire Cout
 );
 
 
@@ -55,122 +61,145 @@ wire [31:0] Zhigh_data_out;
 
 //for revising register R0
 wire [31:0] R0_bus_out;         //modified bus output 
+wire [15:0] Rin_decoded_se;
+wire [15:0] Rout_decoded_se;
+wire [31:0] C_sign_extended;
+wire        use_select_encode;
+wire [15:0] Rin_internal;
+wire [15:0] Rout_internal;
 
 //if BAout is 1 then output 0 onto the bus instead of R0's value
 //then R0 can be used as a zero register
 assign R0_bus_out = BAout ? 32'b0 : R0_data_out;
+assign use_select_encode = (UseSelectEncode === 1'b1);
+assign Rin_internal  = use_select_encode ? Rin_decoded_se  : Rin;
+assign Rout_internal = use_select_encode ? Rout_decoded_se : Rout;
+
+select_encode select_encode_u (
+    .IR(IR_data_out),
+    .Gra(Gra),
+    .Grb(Grb),
+    .Grc(Grc),
+    .Rin(Rin_ctrl),
+    .Rout(Rout_ctrl),
+    .BAout(BAout),
+    .Cout(Cout),
+    .Rin_decoded(Rin_decoded_se),
+    .Rout_decoded(Rout_decoded_se),
+    .C_sign_extended(C_sign_extended)
+);
 
 // Devices
 
 register R0(
     .clear(clear),
     .clock(clock),
-    .enable(Rin[0]),
+    .enable(Rin_internal[0]),
     .BusMuxOut(BusMuxOut),
     .BusMuxIn(R0_data_out)
 );
 register R1(
     .clear(clear),
     .clock(clock),
-    .enable(Rin[1]),
+    .enable(Rin_internal[1]),
     .BusMuxOut(BusMuxOut),
     .BusMuxIn(R1_data_out)
 );
 register R2(
     .clear(clear),
     .clock(clock),
-    .enable(Rin[2]),
+    .enable(Rin_internal[2]),
     .BusMuxOut(BusMuxOut),
     .BusMuxIn(R2_data_out)
 );
 register R3(
     .clear(clear),
     .clock(clock),
-    .enable(Rin[3]),
+    .enable(Rin_internal[3]),
     .BusMuxOut(BusMuxOut),
     .BusMuxIn(R3_data_out)
 );
 register R4(
     .clear(clear),
     .clock(clock),
-    .enable(Rin[4]),
+    .enable(Rin_internal[4]),
     .BusMuxOut(BusMuxOut),
     .BusMuxIn(R4_data_out)
 );
 register R5(
     .clear(clear),
     .clock(clock),
-    .enable(Rin[5]),
+    .enable(Rin_internal[5]),
     .BusMuxOut(BusMuxOut),
     .BusMuxIn(R5_data_out)
 );
 register R6(
     .clear(clear),
     .clock(clock),
-    .enable(Rin[6]),
+    .enable(Rin_internal[6]),
     .BusMuxOut(BusMuxOut),
     .BusMuxIn(R6_data_out)
 );
 register R7(
     .clear(clear),
     .clock(clock),
-    .enable(Rin[7]),
+    .enable(Rin_internal[7]),
     .BusMuxOut(BusMuxOut),
     .BusMuxIn(R7_data_out)
 );
 register R8(
     .clear(clear),
     .clock(clock),
-    .enable(Rin[8]),
+    .enable(Rin_internal[8]),
     .BusMuxOut(BusMuxOut),
     .BusMuxIn(R8_data_out)
 );
 register R9(
     .clear(clear),
     .clock(clock),
-    .enable(Rin[9]),
+    .enable(Rin_internal[9]),
     .BusMuxOut(BusMuxOut),
     .BusMuxIn(R9_data_out)
 );
 register R10(
     .clear(clear),
     .clock(clock),
-    .enable(Rin[10]),
+    .enable(Rin_internal[10]),
     .BusMuxOut(BusMuxOut),
     .BusMuxIn(R10_data_out)
 );
 register R11(
     .clear(clear),
     .clock(clock),
-    .enable(Rin[11]),
+    .enable(Rin_internal[11]),
     .BusMuxOut(BusMuxOut),
     .BusMuxIn(R11_data_out)
 );
 register R12(
     .clear(clear),
     .clock(clock),
-    .enable(Rin[12]),
+    .enable(Rin_internal[12]),
     .BusMuxOut(BusMuxOut),
     .BusMuxIn(R12_data_out)
 );
 register R13(
     .clear(clear),
     .clock(clock),
-    .enable(Rin[13]),
+    .enable(Rin_internal[13]),
     .BusMuxOut(BusMuxOut),
     .BusMuxIn(R13_data_out)
 );
 register R14(
     .clear(clear),
     .clock(clock),
-    .enable(Rin[14]),
+    .enable(Rin_internal[14]),
     .BusMuxOut(BusMuxOut),
     .BusMuxIn(R14_data_out)
 );
 register R15(
     .clear(clear),
     .clock(clock),
-    .enable(Rin[15]),
+    .enable(Rin_internal[15]),
     .BusMuxOut(BusMuxOut),
     .BusMuxIn(R15_data_out)
 );
@@ -287,25 +316,26 @@ Bus bus(
     .BusMuxInY(Y_data_out),
     .BusMuxInHI(HI_data_out),
     .BusMuxInLO(LO_data_out),
+    .BusMuxInC(C_sign_extended),
 	 
 	 
 	 
-	 .R0out(Rout[0]),
-    .R1out(Rout[1]),
-    .R2out(Rout[2]),
-    .R3out(Rout[3]),
-    .R4out(Rout[4]),
-    .R5out(Rout[5]),
-    .R6out(Rout[6]),
-    .R7out(Rout[7]),
-    .R8out(Rout[8]),
-    .R9out(Rout[9]),
-    .R10out(Rout[10]),
-    .R11out(Rout[11]),
-    .R12out(Rout[12]),
-    .R13out(Rout[13]),
-    .R14out(Rout[14]),
-    .R15out(Rout[15]),
+	 .R0out(Rout_internal[0]),
+    .R1out(Rout_internal[1]),
+    .R2out(Rout_internal[2]),
+    .R3out(Rout_internal[3]),
+    .R4out(Rout_internal[4]),
+    .R5out(Rout_internal[5]),
+    .R6out(Rout_internal[6]),
+    .R7out(Rout_internal[7]),
+    .R8out(Rout_internal[8]),
+    .R9out(Rout_internal[9]),
+    .R10out(Rout_internal[10]),
+    .R11out(Rout_internal[11]),
+    .R12out(Rout_internal[12]),
+    .R13out(Rout_internal[13]),
+    .R14out(Rout_internal[14]),
+    .R15out(Rout_internal[15]),
 	 
 
 	 .PCout(PCout),
@@ -314,6 +344,7 @@ Bus bus(
     .HIout(HIout),
     .LOout(LOout),
     .Yout (Yout),
+    .Cout(use_select_encode & Cout),
 	 
 	 
 	 .Zlowout(Zlowout),
@@ -327,3 +358,5 @@ Bus bus(
 
 
 endmodule
+
+
