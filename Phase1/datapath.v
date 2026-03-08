@@ -24,7 +24,14 @@ module datapath(
     input wire UseSelectEncode,
     input wire Gra, Grb, Grc,
     input wire Rin_ctrl, Rout_ctrl,
-    input wire Cout
+    input wire Cout,
+
+    // phase 2 i/o port controls
+    input wire InPortout,
+    input wire OutPortin,
+    input wire InPortStrobe,
+    input wire [31:0] InPortData,
+    output wire [31:0] OutPortData
 );
 
 
@@ -58,22 +65,25 @@ wire [31:0] LO_data_out;
 
 wire [31:0] Zlow_data_out;
 wire [31:0] Zhigh_data_out;
+wire [31:0] InPort_data_out;
+wire [31:0] OutPort_data_out;
 
 //for revising register R0
 wire [31:0] R0_bus_out;         //modified bus output 
-wire [15:0] Rin_decoded_se;
-wire [15:0] Rout_decoded_se;
+wire [15:0] Rin_decoded;
+wire [15:0] Rout_decoded;
 wire [31:0] C_sign_extended;
-wire        use_select_encode;
+wire        select_encode_enable;
 wire [15:0] Rin_internal;
 wire [15:0] Rout_internal;
 
 //if BAout is 1 then output 0 onto the bus instead of R0's value
 //then R0 can be used as a zero register
 assign R0_bus_out = BAout ? 32'b0 : R0_data_out;
-assign use_select_encode = (UseSelectEncode === 1'b1);
-assign Rin_internal  = use_select_encode ? Rin_decoded_se  : Rin;
-assign Rout_internal = use_select_encode ? Rout_decoded_se : Rout;
+assign select_encode_enable = (UseSelectEncode === 1'b1);
+assign Rin_internal  = select_encode_enable ? Rin_decoded  : Rin;
+assign Rout_internal = select_encode_enable ? Rout_decoded : Rout;
+assign OutPortData = OutPort_data_out;
 
 select_encode select_encode_u (
     .IR(IR_data_out),
@@ -84,8 +94,8 @@ select_encode select_encode_u (
     .Rout(Rout_ctrl),
     .BAout(BAout),
     .Cout(Cout),
-    .Rin_decoded(Rin_decoded_se),
-    .Rout_decoded(Rout_decoded_se),
+    .Rin_decoded(Rin_decoded),
+    .Rout_decoded(Rout_decoded),
     .C_sign_extended(C_sign_extended)
 );
 
@@ -241,6 +251,24 @@ register LO(
     .BusMuxIn(LO_data_out)
 );
 
+// output port register: captures bus when OutPortin is asserted
+register OutPort(
+    .clear(clear),
+    .clock(clock),
+    .enable(OutPortin),
+    .BusMuxOut(BusMuxOut),
+    .BusMuxIn(OutPort_data_out)
+);
+
+// input port register: captures external input data on strobe
+register InPort(
+    .clear(clear),
+    .clock(clock),
+    .enable(InPortStrobe),
+    .BusMuxOut(InPortData),
+    .BusMuxIn(InPort_data_out)
+);
+
 register Zlow(
     .clear(clear),
     .clock(clock),
@@ -317,6 +345,7 @@ Bus bus(
     .BusMuxInHI(HI_data_out),
     .BusMuxInLO(LO_data_out),
     .BusMuxInC(C_sign_extended),
+    .BusMuxInInPort(InPort_data_out),
 	 
 	 
 	 
@@ -344,7 +373,8 @@ Bus bus(
     .HIout(HIout),
     .LOout(LOout),
     .Yout (Yout),
-    .Cout(use_select_encode & Cout),
+    .Cout(select_encode_enable & Cout),
+    .InPortout(InPortout),
 	 
 	 
 	 .Zlowout(Zlowout),

@@ -28,13 +28,14 @@ module Bus (
     input [31:0] BusMuxInLO,
 	input [31:0] BusMuxInY,
     input [31:0] BusMuxInC,
+    input [31:0] BusMuxInInPort,
 	 
     
 
     //Encoder
 	// if one of these is a one the registers value will be placed on the bus
     input R0out, R1out, R2out, R3out, R4out, R5out, R6out, R7out, R8out, R9out, R10out, R11out, R12out, R13out, R14out, R15out,
-    input PCout, MDRout, IRout, Zlowout, Zhighout, HIout, LOout, Yout, Cout,
+    input PCout, MDRout, IRout, Zlowout, Zhighout, HIout, LOout, Yout, Cout, InPortout,
 
     output wire [31:0] BusMuxOut
 );
@@ -68,6 +69,7 @@ module Bus (
         if (Zhighout) q = BusMuxInZhigh;
 		if (Yout) 	  q = BusMuxInY;
 		if (Cout)     q = BusMuxInC;
+		if (InPortout) q = BusMuxInInPort;
 		if (IRout)    q = BusMuxInIR;
     end
 
