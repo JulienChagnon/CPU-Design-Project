@@ -27,6 +27,17 @@ reg [31:0] Mdatain;
 
 reg [31:0] RegisterImmediate;
 
+reg UseSelectEncode;
+reg Grb, Grc;
+reg Rin_ctrl, Rout_ctrl;
+
+reg InPortout;
+reg OutPortin;
+reg InPortStrobe;
+reg [31:0] InPortData;
+
+wire [31:0] OutPortData;
+
 
 // FSM states
 parameter Default   = 4'd0,
@@ -36,9 +47,10 @@ parameter Default   = 4'd0,
           LoadR4b   = 4'd4,
           LoadPCa   = 4'd5,
           LoadPCb   = 4'd6,
-          JR        = 4'd7,
-          JAL1      = 4'd8,
-          JAL2      = 4'd9;
+          LoadIR    = 4'd7,
+          JR        = 4'd8,
+          JAL1      = 4'd9,
+          JAL2      = 4'd10;
 
 reg [3:0] Present_state = Default;
 
@@ -84,9 +96,21 @@ datapath DUT (
 
     .BAout(BAout),
 
-    .CONin(1'b0),
-    .CONout(),
-    .IR_C2(2'b00),
+    
+
+    .UseSelectEncode(UseSelectEncode),
+    .Gra(Gra),
+    .Grb(Grb),
+    .Grc(Grc),
+    .Rin_ctrl(Rin_ctrl),
+    .Rout_ctrl(Rout_ctrl),
+
+    .InPortout(InPortout),
+    .OutPortin(OutPortin),
+    .InPortStrobe(InPortStrobe),
+    .InPortData(InPortData),
+    .OutPortData(OutPortData),
+
     .Cout(Cout)
 );
 
@@ -114,7 +138,8 @@ always @(posedge Clock) begin
             LoadR4b  : Present_state <= LoadPCa;
 
             LoadPCa  : Present_state <= LoadPCb;
-            LoadPCb  : Present_state <= JR;
+            LoadPCb  : Present_state <= LoadIR;
+            LoadIR   : Present_state <= JR;
 
             JR       : Present_state <= JAL1;
             JAL1     : Present_state <= JAL2;
@@ -149,18 +174,35 @@ always @(Present_state) begin
     Cout     = 0;
     ADD      = 0;
     Mdatain  = 32'b0;
+    RegisterImmediate = 32'b0;
+
+    UseSelectEncode = 0;
+
+    Gra = 0;
+    Grb = 0;
+    Grc = 0;
+
+    Rin_ctrl = 0;
+    Rout_ctrl = 0;
+
+    InPortout = 0;
+    OutPortin = 0;
+    InPortStrobe = 0;
+    InPortData = 0;
 
     case (Present_state)
 
         LoadR12a: begin
+            UseSelectEncode = 0;
             RegisterImmediate = 32'h000000FF;
-            Cout   = 1;
+            Cout = 1;
             Rin[12] = 1;
         end
 
 
         // Load R4 = 80
         LoadR4a: begin
+            UseSelectEncode = 0;
             RegisterImmediate = 32'h00000080;
             Cout   = 1;
             Rin[4] = 1;
@@ -168,14 +210,21 @@ always @(Present_state) begin
 
         // Load PC = 10
         LoadPCa: begin
+            UseSelectEncode = 0;
             RegisterImmediate = 32'h00000010;
             Cout   = 1;
             PCin = 1;
         end
 
+        LoadIR: begin
+            RegisterImmediate = 32'h00000000; // instruction containing register fields
+            Cout = 1;
+            IRin = 1;
+        end
 
         // JR  → PC ← R12
         JR: begin
+            UseSelectEncode = 0;
             Rout[12] = 1;
             PCin     = 1;
         end
@@ -183,6 +232,7 @@ always @(Present_state) begin
 
         // JAL step 1 → R12 ← PC
         JAL1: begin
+            UseSelectEncode = 0;
             PCout    = 1;
             Rin[12]  = 1;
         end
@@ -190,6 +240,7 @@ always @(Present_state) begin
 
         // JAL step 2 → PC ← R4
         JAL2: begin
+            UseSelectEncode = 0;
             Rout[4]  = 1;
             PCin     = 1;
         end
@@ -203,7 +254,6 @@ initial begin
     #15;
     clear = 0; 
 end
-
 
 // Waveforms
 initial begin
