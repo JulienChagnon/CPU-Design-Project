@@ -27,8 +27,14 @@ reg ADD;
 
 wire CONout;
 
+reg UseSelectEncode;
+reg Grb, Grc;
+reg Rin_ctrl, Rout_ctrl;
+reg [31:0] RegisterImmediate;
+
+
 reg [3:0] ALUop;
-reg [31:0] Mdatain;
+// reg [31:0] Mdatain;
 
 // FSM states
 parameter Default  = 4'd0,
@@ -52,7 +58,7 @@ datapath DUT (
     .clear(clear),
 
     .A(32'b0),
-    .RegisterImmediate(32'b0),
+    .RegisterImmediate(RegisterImmediate),
 
     .Read(Read),
     .Write(Write),
@@ -87,6 +93,20 @@ datapath DUT (
 
     .BAout(BAout),
 
+    .UseSelectEncode(UseSelectEncode),
+    .Gra(Gra),
+    .Grb(Grb),
+    .Grc(Grc),
+    .Rin_ctrl(Rin_ctrl),
+    .Rout_ctrl(Rout_ctrl),
+
+    .Cout(Cout),
+
+    .InPortout(1'b0),
+    .OutPortin(1'b0),
+    .InPortStrobe(1'b0),
+    .InPortData(32'b0),
+    .OutPortData(),
     .CONin(CONin),
     .CONout(CONout),
     .IR_C2(IR_C2)
@@ -149,14 +169,27 @@ always @(*) begin
     CONin    = 0;
     Cout     = 0;
     ADD      = 0;
-    Mdatain  = 32'b0;
+    //Mdatain  = 32'b0;
+    RegisterImmediate = 32'b0;
 
     case (Present_state)
 
+        
+        
         // preload R3
-        LoadR3a: Rin[3] = 1;
-        LoadR3b: Rin[3] = 1;
+        LoadR3a: begin
+            UseSelectEncode = 0;
+            RegisterImmediate = 32'h00000005;   //must change this value for different branch conditions (zero, positive, negative)
+            Cout = 1;
+        end
 
+        LoadR3b: begin
+            UseSelectEncode = 0;
+            RegisterImmediate = 32'h00000005;   //must change this value for different branch conditions (zero, positive, negative)
+            Cout = 1;
+            Rin[3] = 1;
+
+        end
         LoadPC: begin
             Rout[3] = 1;   // put R3 value on bus
             PCin = 1;      // load PC
@@ -186,7 +219,7 @@ always @(*) begin
 
         // T3 (branch condition evaluation)
         T3: begin
-            Gra     = 1;
+            UseSelectEncode = 0;
             Rout[3] = 1;
             CONin   = 1;
         end
@@ -199,8 +232,7 @@ always @(*) begin
 
         // T5
         T5: begin
-            Cout = 1;
-            ADD  = 1;
+            ALUop = 4'b0000; // ADD
             Zin  = 1;
         end
 
@@ -214,30 +246,24 @@ always @(*) begin
     endcase
 end
 
-initial begin
-
-    #25;
-    force DUT.R3_data_out = 32'h00000000; // zero
-    IR_C2 = 2'b00; // testing brzr (branch if zero)
-
-    #100;
-    force DUT.R3_data_out = 32'h00000005; // positive
-    IR_C2 = 2'b01; // testing brnz (branch if not zero)
-
-    #100;
-    force DUT.R3_data_out = 32'h00000007; // positive
-    IR_C2 = 2'b10; // testing brpl (branch if positive)
-
-    #100;
-    force DUT.R3_data_out = 32'hFFFFFFFF; // negative
-    IR_C2 = 2'b11; // testing brmi (branch if negative)
-
-end
+always @(posedge Clock)
+    $display("Bus=%h R3=%h CONout=%b PC=%h",
+        DUT.BusMuxOut,
+        DUT.R3_data_out,
+        CONout,
+        DUT.PC_data_out);
 
 // Reset
 initial begin
     clear = 1;
     #20 clear = 0;
+end
+
+initial begin
+    IR_C2 = 2'b00;   // brzr (branch if zero)
+    // IR_C2 = 2'b01;   // brnz (branch if not zero)
+    // IR_C2 = 2'b10;   // brpl (branch if positive)
+    // IR_C2 = 2'b11;   // brmi (branch if negative)
 end
 
 
