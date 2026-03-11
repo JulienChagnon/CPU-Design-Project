@@ -8,6 +8,18 @@ module ram_512x32 (
 );
 
     reg [31:0] memory [0:511];      // 512 words of 32 bits each
+    integer i;
+
+    // Shared Phase 2 data preloads. These entries are used by multiple tests.
+    initial begin
+        for (i = 0; i < 512; i = i + 1)
+            memory[i] = 32'b0;
+
+        memory[9'h065] = 32'h00000084; // ld R7, 0x65
+        memory[9'h0C9] = 32'h0000002B; // ld R0, 0x72(R2)
+        memory[9'h01F] = 32'h000000D4; // st Case1
+        memory[9'h082] = 32'h000000A7; // st Case2
+    end
 
     always @(posedge clk) begin     // synchronous read/write
         if (write)

@@ -3,7 +3,7 @@ module MAR (
     input clear,
     input MARin,                // enable signal
     input [31:0] bus_mux_out,   // data from bus
-    output reg [8:0] address    // to RAM
+    output [8:0] address        // to RAM
 );
 
     reg [31:0] MAR_reg;             // internal register to hold the value of MAR

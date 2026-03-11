@@ -19,6 +19,7 @@ module datapath(
 	input  wire LOin, LOout,
 	input wire Zhighin, Zlowin, Zhighout, Zlowout,
     input wire BAout,      // BAout signal gates 0's onto the bus if R0 is selected
+    input wire IncPC,      // When 1, forces ALU A-input to 1 so Z = bus + 1 = PC+1
 
     // Phase 2 select/encode controls (optional; use UseSelectEncode=1)
     input wire UseSelectEncode,
@@ -31,7 +32,11 @@ module datapath(
     input wire OutPortin,
     input wire InPortStrobe,
     input wire [31:0] InPortData,
-    output wire [31:0] OutPortData
+    output wire [31:0] OutPortData,
+
+    // CON FF: branch condition latch
+    input wire CONin,
+    output wire CONout
 );
 
 
@@ -298,8 +303,11 @@ memory_subsystem mem_sys (
 // ALU wires
 wire [63:0] alu_result;
 
+// When IncPC=1 inject 1 into ALU A-input so Z = BusMuxOut + 1 = PC+1
+wire [31:0] alu_A = IncPC ? 32'd1 : Y_data_out;
+
 ALU alu (
-    .A(Y_data_out),
+    .A(alu_A),
     .B(BusMuxOut),
     .op(ALUop),
     .result(alu_result)
@@ -387,6 +395,13 @@ Bus bus(
 );
 
 
+conff conff_inst (
+    .BusMuxOut(BusMuxOut),
+    .IR_C2(IR_data_out[20:19]),
+    .CONin(CONin),
+    .clk(clock),
+    .clear(clear),
+    .CONout(CONout)
+);
+
 endmodule
-
-
