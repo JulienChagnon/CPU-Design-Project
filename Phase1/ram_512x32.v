@@ -14,6 +14,9 @@ module ram_512x32 (
     initial begin
         for (i = 0; i < 512; i = i + 1)
             memory[i] = 32'b0;
+        memory[0] = 32'h000000FF;   // value for R12
+        memory[1] = 32'h00000080;   // value for R4
+        memory[2] = 32'h00000010;   // value for PC
 
         memory[9'h065] = 32'h00000084; // ld R7, 0x65
         memory[9'h0C9] = 32'h0000002B; // ld R0, 0x72(R2)
