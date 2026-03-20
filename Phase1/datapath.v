@@ -18,16 +18,16 @@ module datapath(
 	input  wire HIin, HIout,
 	input  wire LOin, LOout,
 	input wire Zhighin, Zlowin, Zhighout, Zlowout,
-    input wire BAout,      // BAout signal gates 0's onto the bus if R0 is selected
-    input wire IncPC,      // When 1, forces ALU A-input to 1 so Z = bus + 1 = PC+1
+    input wire BAout,      
+    input wire IncPC,      
 
-    // Phase 2 select/encode controls (optional; use UseSelectEncode=1)
+    //select encode controls
     input wire UseSelectEncode,
     input wire Gra, Grb, Grc,
     input wire Rin_ctrl, Rout_ctrl,
     input wire Cout,
 
-    // phase 2 i/o port controls
+    //i/o port controls
     input wire InPortout,
     input wire OutPortin,
     input wire InPortStrobe,
@@ -36,11 +36,14 @@ module datapath(
 
     // CON FF: branch condition latch
     input wire CONin,
-    output wire CONout
+    output wire CONout,
+
+    //used to send instruction register value to the control unit
+    output wire [31:0] IR_value
 );
 
 
-wire [31:0] BusMuxOut, BusMuxInRZ, BusMuxInRA, BusMuxInRB, BusMuxIn_MDR;
+wire [31:0] BusMuxOut, BusMuxInRZ, BusMuxInRA, BusMuxInRB, BusMuxIn_MDR, Mdatain;
 wire [63:0] zregin;
 
 //General Purpose Registers
@@ -89,6 +92,7 @@ assign select_encode_enable = (UseSelectEncode === 1'b1);
 assign Rin_internal  = select_encode_enable ? Rin_decoded  : Rin;
 assign Rout_internal = select_encode_enable ? Rout_decoded : Rout;
 assign OutPortData = OutPort_data_out;
+assign IR_value = IR_data_out;
 
 select_encode select_encode_u (
     .IR(IR_data_out),
@@ -265,7 +269,7 @@ register OutPort(
     .BusMuxIn(OutPort_data_out)
 );
 
-// input port register: captures external input data on strobe
+
 register InPort(
     .clear(clear),
     .clock(clock),
@@ -297,13 +301,13 @@ memory_subsystem mem_sys (
     .Read(Read),
     .Write(Write),
     .BusMuxOut(BusMuxOut),
+    .Mdatain(Mdatain),
     .BusMuxIn_MDR(BusMuxIn_MDR)
 );
 
 // ALU wires
 wire [63:0] alu_result;
 
-// When IncPC=1 inject 1 into ALU A-input so Z = BusMuxOut + 1 = PC+1
 wire [31:0] alu_A = IncPC ? 32'd1 : Y_data_out;
 
 ALU alu (
