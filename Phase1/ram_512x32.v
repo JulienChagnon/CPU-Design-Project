@@ -10,7 +10,7 @@ module ram_512x32 (
     reg [31:0] memory [0:511];      //512 words of 32 bits each
     integer i;
 
-    //phase 3 sample program starting at mem location 0x0
+    //phase 4 sample program starting at mem location 0x0
     initial begin
         for (i = 0; i < 512; i = i + 1)
             memory[i] = 32'b0;
@@ -56,11 +56,30 @@ module ram_512x32 (
         memory[9'h026] = 32'h8D300003; // ldi  R10, 3(R6)
         memory[9'h027] = 32'h8D880005; // ldi  R11, 5(R1)
         memory[9'h028] = 32'h9D000000; // jal  R10
-        memory[9'h029] = 32'hD8000000; // halt
+        memory[9'h029] = 32'hB3000000; // in   R6
+        memory[9'h02A] = 32'h93000077; // st   0x77, R6
+        memory[9'h02B] = 32'h8980002E; // ldi  R3, 0x2E
+        memory[9'h02C] = 32'h8A800001; // ldi  R5, 1
+        memory[9'h02D] = 32'h89000028; // ldi  R2, 40
+        memory[9'h02E] = 32'hBB000000; // out  R6
+        memory[9'h02F] = 32'h8917FFFF; // ldi  R2, -1(R2)
+        memory[9'h030] = 32'hA9000008; // brzr R2, 8
+        memory[9'h031] = 32'h83800088; // ld   R7, 0x88
+        memory[9'h032] = 32'h8BBFFFFF; // ldi  R7, -1(R7)
+        memory[9'h033] = 32'hD0000000; // nop
+        memory[9'h034] = 32'hAB8FFFFD; // brnz R7, -3
+        memory[9'h035] = 32'h23328000; // shr  R6, R6, R5
+        memory[9'h036] = 32'hAB0FFFF7; // brnz R6, -9
+        memory[9'h037] = 32'h83000077; // ld   R6, 0x77
+        memory[9'h038] = 32'hA1800000; // jr   R3
+        memory[9'h039] = 32'h8B000063; // ldi  R6, 0x63
+        memory[9'h03A] = 32'hBB000000; // out  R6
+        memory[9'h03B] = 32'hD8000000; // halt
 			
-		  //Initialize memory locations 0x89 and 0xA3
+		  //Initialize memory locations 0x88, 0x89, and 0xA3
         memory[9'h089] = 32'h000000A7;
         memory[9'h0A3] = 32'h00000068;
+        memory[9'h088] = 32'h0000FFFF;
 
         memory[9'h0B2] = 32'h07450000; // add  R14, R8, R10
         memory[9'h0B3] = 32'h0ECD8000; // sub  R13, R9, R11

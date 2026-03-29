@@ -40,19 +40,7 @@ module ld_tb2;
     // ld R0, 0x72(R2): IR[26:23]=Ra=0, IR[22:19]=Rb=2, IR[18:0]=C=0x72
     // Effective address: R2 + 0x72 = 0x57 + 0x72 = 0xC9
     localparam [31:0] LD_INSTR = 32'h00100072;
-    localparam [31:0] MEM_DATA = 32'h0000002B; // value stored at RAM[0xC9]
 
-    // Control Sequence: ld (4-step fetch, no IR force)
-    // T0: PCout, MARin, IncPC, Zin
-    // T1: Zlowout, PCin, Read
-    // T2: Read, MDRin
-    // T3: MDRout, IRin
-    // T4: Grb, BAout, Yin     (R2 onto bus; BAout only forces 0 when R0 selected)
-    // T5: Cout, ADD, Zin
-    // T6: Zlowout, MARin
-    // T7: Read
-    // T8: Read, MDRin
-    // T9: MDRout, Gra, Rin
     parameter Default=4'd0, T0=4'd1, T1=4'd2, T2=4'd3, T3=4'd4,
               T4=4'd5, T5=4'd6, T6=4'd7, T7=4'd8, T8=4'd9, T9=4'd10;
 

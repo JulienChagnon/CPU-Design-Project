@@ -1,0 +1,69 @@
+`timescale 1ns/10ps
+
+module cpu_de0_top (
+    input  wire        CLOCK_50,
+    input  wire [3:0]  KEY,
+    input  wire [9:0]  SW,
+    output wire [9:0]  LEDR,
+    output wire [6:0]  HEX0,
+    output wire [6:0]  HEX1
+);
+
+    wire        reset;
+    wire        stop;
+    wire [31:0] in_port_data;
+    wire [31:0] out_port_data;
+    wire        run;
+
+    assign reset = ~KEY[0];               // KEY0 active-low
+    assign stop  = ~KEY[1];               // KEY1 active-low
+    assign in_port_data = {24'b0, SW[7:0]};
+
+    cpu cpu_u (
+        .clock(CLOCK_50),
+        .reset(reset),
+        .stop(stop),
+        .InPortData(in_port_data),
+        .InPortStrobe(1'b1),              // continuously capture switches
+        .OutPortData(out_port_data),
+        .Run(run),
+        .CONout(),
+        .IR_value(),
+        .state_dbg()
+    );
+
+    assign LEDR = 10'b0;
+    assign LEDR[5] = run;                 // Run.Out indicator
+
+    // Display Out.Port[7:0] on HEX1 HEX0
+    hex_to_7seg h0 (.nibble(out_port_data[3:0]), .seg(HEX0));
+    hex_to_7seg h1 (.nibble(out_port_data[7:4]), .seg(HEX1));
+
+endmodule
+
+module hex_to_7seg (
+    input  wire [3:0] nibble,
+    output reg  [6:0] seg
+);
+    always @(*) begin
+        case (nibble)
+            4'h0: seg = 7'b1000000;
+            4'h1: seg = 7'b1111001;
+            4'h2: seg = 7'b0100100;
+            4'h3: seg = 7'b0110000;
+            4'h4: seg = 7'b0011001;
+            4'h5: seg = 7'b0010010;
+            4'h6: seg = 7'b0000010;
+            4'h7: seg = 7'b1111000;
+            4'h8: seg = 7'b0000000;
+            4'h9: seg = 7'b0010000;
+            4'hA: seg = 7'b0001000;
+            4'hB: seg = 7'b0000011;
+            4'hC: seg = 7'b1000110;
+            4'hD: seg = 7'b0100001;
+            4'hE: seg = 7'b0000110;
+            4'hF: seg = 7'b0001110;
+            default: seg = 7'b1111111;
+        endcase
+    end
+endmodule

@@ -39,7 +39,7 @@ module ld_tb;
 
     // ld R7, 0x65: IR[26:23]=Ra=7, IR[22:19]=Rb=0, IR[18:0]=C=0x65
     localparam [31:0] LD_INSTR = 32'h03800065;
-    localparam [31:0] MEM_DATA = 32'h00000084; // value stored at RAM[0x65]
+    // RAM[0x65] = 32'h00000084 is preloaded in ram_512x32.v.
 
     // Control Sequence: ld (4-step fetch, no IR force)
     // T0: PCout, MARin, IncPC, Zin
