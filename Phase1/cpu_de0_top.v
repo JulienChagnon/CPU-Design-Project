@@ -26,7 +26,9 @@ module cpu_de0_top (
         .DIVIDE_BY(25)
     ) clkdiv_u (
         .clk_in(CLOCK_50),
-        .reset(reset),
+        // Keep divided clock running during reset so synchronous clears
+        // in the datapath can actually sample reset on a clock edge.
+        .reset(1'b0),
         .clk_out(cpu_clock)
     );
 
