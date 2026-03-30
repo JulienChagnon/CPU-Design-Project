@@ -11,6 +11,7 @@ module cpu_de0_top (
 
     wire        reset;
     wire        stop;
+    wire        cpu_clock;
     wire [31:0] in_port_data;
     wire [31:0] out_port_data;
     wire        run;
@@ -19,8 +20,18 @@ module cpu_de0_top (
     assign stop  = ~KEY[1];               // KEY1 active-low
     assign in_port_data = {24'b0, SW[7:0]};
 
+    // Divide 50 MHz board clock for more observable board behavior.
+    // Fcpu = 50 MHz / (2 * DIVIDE_BY) = 1 MHz when DIVIDE_BY = 25.
+    clock_divider #(
+        .DIVIDE_BY(25)
+    ) clkdiv_u (
+        .clk_in(CLOCK_50),
+        .reset(reset),
+        .clk_out(cpu_clock)
+    );
+
     cpu cpu_u (
-        .clock(CLOCK_50),
+        .clock(cpu_clock),
         .reset(reset),
         .stop(stop),
         .InPortData(in_port_data),
@@ -32,13 +43,42 @@ module cpu_de0_top (
         .state_dbg()
     );
 
-    assign LEDR = 10'b0;
-    assign LEDR[5] = run;                 // Run.Out indicator
+    // Drive LEDR with a single assignment to avoid multiple-driver conflicts.
+    assign LEDR = {4'b0, run, 5'b0};      // LEDR[5] = Run.Out indicator
 
     // Display Out.Port[7:0] on HEX1 HEX0
     hex_to_7seg h0 (.nibble(out_port_data[3:0]), .seg(HEX0));
     hex_to_7seg h1 (.nibble(out_port_data[7:4]), .seg(HEX1));
 
+endmodule
+
+module clock_divider #(
+    parameter integer DIVIDE_BY = 25
+) (
+    input  wire clk_in,
+    input  wire reset,
+    output reg  clk_out
+);
+    integer count;
+
+    initial begin
+        count = 0;
+        clk_out = 1'b0;
+    end
+
+    always @(posedge clk_in or posedge reset) begin
+        if (reset) begin
+            count <= 0;
+            clk_out <= 1'b0;
+        end
+        else if (count == (DIVIDE_BY - 1)) begin
+            count <= 0;
+            clk_out <= ~clk_out;
+        end
+        else begin
+            count <= count + 1;
+        end
+    end
 endmodule
 
 module hex_to_7seg (
